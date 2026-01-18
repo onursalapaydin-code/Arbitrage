@@ -451,8 +451,16 @@
         </div>
     </div>
     
-    <div class="update-time">
-        Son Güncelleme: <span id="last-update">-</span>
+    <div class="update-time" style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; align-items: center;">
+        <span>
+            Veri Bağlantısı: <span id="data-connection" style="color: #888;">⏹ Bilinmiyor</span>
+        </span>
+        <span>
+            Broker: <span id="broker-connection" style="color: #888;">⏹ Bilinmiyor</span>
+        </span>
+        <span>
+            Son Güncelleme: <span id="last-update">-</span>
+        </span>
     </div>
     
     <script>
@@ -541,6 +549,29 @@
             document.getElementById('spread-days').textContent = (data.spread_days || '-') + ' gün';
             document.getElementById('near-expiry').textContent = (data.near_days_to_expiry || '-') + ' gün';
             document.getElementById('symbol-count').textContent = data.symbol_count || '-';
+            
+            // Bağlantı durumları
+            const idealDataConn = data.ideal_data_connected !== false;
+            const brokerConn = data.broker_connected !== false;
+            
+            const dataConnEl = document.getElementById('data-connection');
+            const brokerConnEl = document.getElementById('broker-connection');
+            
+            if (idealDataConn) {
+                dataConnEl.textContent = '✅ Bağlı';
+                dataConnEl.style.color = '#4caf50';
+            } else {
+                dataConnEl.textContent = '❌ Bağlantı Yok';
+                dataConnEl.style.color = '#f44336';
+            }
+            
+            if (brokerConn) {
+                brokerConnEl.textContent = '✅ Bağlı';
+                brokerConnEl.style.color = '#4caf50';
+            } else {
+                brokerConnEl.textContent = '❌ Bağlantı Yok';
+                brokerConnEl.style.color = '#f44336';
+            }
             
             // Calendar tablosu
             updateCalendarTable(data.positions || []);
