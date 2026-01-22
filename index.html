@@ -295,42 +295,43 @@
             }
             
             // PnL
-            const totalPnl = (data.pnl?.total || 0);
+            const totalPnl = data.total_pnl || 0;
             const totalEl = document.getElementById('totalPnl');
             totalEl.textContent = formatPnl(totalPnl);
             totalEl.className = 'card-value ' + (totalPnl >= 0 ? 'positive' : 'negative');
             
-            document.getElementById('realizedPnl').textContent = formatPnl(data.daily?.realized_pnl);
+            document.getElementById('realizedPnl').textContent = formatPnl(data.daily_pnl);
             
             // Positions
-            document.getElementById('snCount').textContent = data.pnl?.sn_cnt || 0;
+            document.getElementById('snCount').textContent = data.count || 0;
             
             // Daily
-            document.getElementById('dailyTrades').textContent = data.daily?.trades || 0;
-            document.getElementById('dailyComm').textContent = formatNumber(data.daily?.commission) + ' TL';
+            document.getElementById('dailyTrades').textContent = data.trades || 0;
+            document.getElementById('dailyComm').textContent = '- TL';
             
-            // Budget
-            const viopUsed = data.budget?.viop_used || 0;
-            const viopTotal = data.budget?.viop || 1;
-            const viopPct = (viopUsed / viopTotal) * 100;
-            document.getElementById('viopUsed').textContent = formatNumber(viopUsed) + ' TL';
+            // Budget - v13 uses viop_bal/spot_bal and viop_used/spot_used
+            const viopUsed = data.viop_used || 0;
+            const viopBal = data.viop_bal || 0;
+            const viopTotal = viopUsed + viopBal;
+            const viopPct = viopTotal > 0 ? (viopUsed / viopTotal) * 100 : 0;
+            document.getElementById('viopUsed').textContent = formatNumber(viopBal) + ' TL';
             document.getElementById('viopBar').style.width = Math.min(viopPct, 100) + '%';
             document.getElementById('viopSub').textContent = formatNumber(viopUsed) + ' / ' + formatNumber(viopTotal);
             
-            const spotUsed = data.budget?.spot_used || 0;
-            const spotTotal = data.budget?.spot || 1;
-            const spotPct = (spotUsed / spotTotal) * 100;
-            document.getElementById('spotUsed').textContent = formatNumber(spotUsed) + ' TL';
+            const spotUsed = data.spot_used || 0;
+            const spotBal = data.spot_bal || 0;
+            const spotTotal = spotUsed + spotBal;
+            const spotPct = spotTotal > 0 ? (spotUsed / spotTotal) * 100 : 0;
+            document.getElementById('spotUsed').textContent = formatNumber(spotBal) + ' TL';
             document.getElementById('spotBar').style.width = Math.min(spotPct, 100) + '%';
             document.getElementById('spotSub').textContent = formatNumber(spotUsed) + ' / ' + formatNumber(spotTotal);
             
-            // Risk free
-            const rf = data.risk_free || 0;
-            document.getElementById('riskFree').textContent = '%' + (rf * 100).toFixed(2);
+            // Risk free - not in v13
+            document.getElementById('riskFree').textContent = '%' + (data.risk_free ? (data.risk_free * 100).toFixed(2) : '0.00');
             
-            // Spot-Near positions table
+            // Spot-Near positions table - v13 uses "positions" with sq, nq, d
             const snTbody = document.getElementById('snPositions');
-            const snData = data.spot_near || {};
+            const snData = data.positions || {};
             const snKeys = Object.keys(snData);
             
             if (snKeys.length === 0) {
@@ -342,10 +343,10 @@
                     const pnlClass = (p.pnl || 0) >= 0 ? 'pnl-positive' : 'pnl-negative';
                     html += `<tr>
                         <td><strong>${sym}</strong></td>
-                        <td>${p.spot_qty || '-'}</td>
-                        <td>${p.near_qty || '-'}</td>
+                        <td>${p.sq || '-'}</td>
+                        <td>${p.nq || '-'}</td>
                         <td class="${pnlClass}">${formatPnl(p.pnl)}</td>
-                        <td>${p.days || '-'}</td>
+                        <td>${p.d || '-'}</td>
                     </tr>`;
                 });
                 snTbody.innerHTML = html;
