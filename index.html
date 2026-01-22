@@ -13,7 +13,7 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1400px; margin: 0 auto; }
         
         header {
             display: flex;
@@ -63,7 +63,8 @@
             50% { opacity: 0.5; transform: scale(1.2); }
         }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
         
         .card {
             background: rgba(255,255,255,0.05);
@@ -72,6 +73,10 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1);
         }
+        .card.highlight-week { border-left: 3px solid #00d4ff; }
+        .card.highlight-month { border-left: 3px solid #ff9800; }
+        .card.highlight-all { border-left: 3px solid #9c27b0; }
+        
         .card-title {
             font-size: 0.85rem;
             color: #888;
@@ -80,13 +85,27 @@
             margin-bottom: 10px;
         }
         .card-value {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
         }
         .card-value.positive { color: #00ff88; }
         .card-value.negative { color: #ff4444; }
         .card-value.neutral { color: #00d4ff; }
         .card-sub { font-size: 0.85rem; color: #666; margin-top: 5px; }
+        
+        .period-stats {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        .period-stat {
+            background: rgba(255,255,255,0.05);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+        .period-stat span { color: #888; }
         
         .budget-bar {
             height: 8px;
@@ -102,6 +121,14 @@
         }
         .budget-fill.viop { background: linear-gradient(90deg, #00d4ff, #0099cc); }
         .budget-fill.spot { background: linear-gradient(90deg, #00ff88, #00cc6a); }
+        
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: #aaa;
+        }
         
         .positions-table {
             width: 100%;
@@ -146,9 +173,13 @@
         }
         
         @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr; }
-            .card-value { font-size: 1.5rem; }
+            .grid { grid-template-columns: 1fr 1fr; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .card-value { font-size: 1.4rem; }
             header { flex-direction: column; gap: 15px; }
+        }
+        @media (max-width: 480px) {
+            .grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -160,13 +191,13 @@
                 <div class="version">v13 - Spot-Near Only</div>
             </div>
             <div class="status-bar">
+                <div class="status-indicator" id="brokerStatus">
+                    <div class="pulse" id="brokerPulse"></div>
+                    <span id="brokerText">Broker</span>
+                </div>
                 <div class="status-indicator" id="marketStatus">
                     <div class="pulse" id="marketPulse"></div>
                     <span id="marketText">Yükleniyor...</span>
-                </div>
-                <div class="status-indicator" id="brokerStatus">
-                    <div class="pulse" id="brokerPulse"></div>
-                    <span id="brokerText">-</span>
                 </div>
                 <div class="status-indicator" id="modeStatus">
                     <span id="modeText">-</span>
@@ -174,21 +205,51 @@
             </div>
         </header>
         
-        <div class="grid">
-            <div class="card">
-                <div class="card-title">🎯 Beklenen Kar</div>
-                <div class="card-value" id="totalExp">-</div>
-                <div class="card-sub">Tüm pozisyonların toplamı</div>
+        <!-- Dönemsel Performans -->
+        <div class="section-title">📈 Performans Özeti</div>
+        <div class="grid-3">
+            <div class="card highlight-week">
+                <div class="card-title">📅 Bu Hafta (7 Gün)</div>
+                <div class="card-value" id="weekPnl">-</div>
+                <div class="period-stats">
+                    <div class="period-stat"><span>Komisyon:</span> <span id="weekComm">-</span></div>
+                    <div class="period-stat"><span>İşlem:</span> <span id="weekTrades">-</span></div>
+                    <div class="period-stat"><span>Gün:</span> <span id="weekDays">-</span></div>
+                </div>
             </div>
             
+            <div class="card highlight-month">
+                <div class="card-title">📆 Bu Ay (30 Gün)</div>
+                <div class="card-value" id="monthPnl">-</div>
+                <div class="period-stats">
+                    <div class="period-stat"><span>Komisyon:</span> <span id="monthComm">-</span></div>
+                    <div class="period-stat"><span>İşlem:</span> <span id="monthTrades">-</span></div>
+                    <div class="period-stat"><span>Gün:</span> <span id="monthDays">-</span></div>
+                </div>
+            </div>
+            
+            <div class="card highlight-all">
+                <div class="card-title">🏆 Tüm Zamanlar</div>
+                <div class="card-value" id="allPnl">-</div>
+                <div class="period-stats">
+                    <div class="period-stat"><span>Komisyon:</span> <span id="allComm">-</span></div>
+                    <div class="period-stat"><span>İşlem:</span> <span id="allTrades">-</span></div>
+                    <div class="period-stat"><span>Gün:</span> <span id="allDays">-</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Günlük Durum -->
+        <div class="section-title">📊 Günlük Durum</div>
+        <div class="grid">
             <div class="card">
-                <div class="card-title">💰 Toplam P&L</div>
+                <div class="card-title">💰 Açık P&L</div>
                 <div class="card-value" id="totalPnl">-</div>
                 <div class="card-sub">Gerçekleşen: <span id="realizedPnl">-</span></div>
             </div>
             
             <div class="card">
-                <div class="card-title">📈 Spot-Near Pozisyon</div>
+                <div class="card-title">📈 Pozisyon</div>
                 <div class="card-value neutral" id="snCount">-</div>
                 <div class="card-sub">Açık pozisyon sayısı</div>
             </div>
@@ -198,22 +259,6 @@
                 <div class="card-value neutral" id="dailyTrades">-</div>
                 <div class="card-sub">Komisyon: <span id="dailyComm">-</span></div>
             </div>
-        </div>
-        
-        <div class="grid">
-            <div class="card">
-                <div class="card-title">💵 Spot Bütçe</div>
-                <div class="card-value neutral" id="spotUsed">-</div>
-                <div class="budget-bar"><div class="budget-fill spot" id="spotBar"></div></div>
-                <div class="card-sub" id="spotSub">- / -</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">💳 VIOP Bütçe</div>
-                <div class="card-value neutral" id="viopUsed">-</div>
-                <div class="budget-bar"><div class="budget-fill viop" id="viopBar"></div></div>
-                <div class="card-sub" id="viopSub">- / -</div>
-            </div>
             
             <div class="card">
                 <div class="card-title">📊 Risksiz Faiz</div>
@@ -222,16 +267,35 @@
             </div>
         </div>
         
+        <!-- Bütçe -->
+        <div class="section-title">💳 Bütçe Durumu</div>
+        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="card">
+                <div class="card-title">VİOP Teminat</div>
+                <div class="card-value neutral" id="viopBal">-</div>
+                <div class="budget-bar"><div class="budget-fill viop" id="viopBar"></div></div>
+                <div class="card-sub">Kullanılan: <span id="viopUsed">-</span></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Spot Bakiye</div>
+                <div class="card-value neutral" id="spotBal">-</div>
+                <div class="budget-bar"><div class="budget-fill spot" id="spotBar"></div></div>
+                <div class="card-sub">Kullanılan: <span id="spotUsed">-</span></div>
+            </div>
+        </div>
+        
+        <!-- Pozisyonlar -->
         <div class="card">
-            <div class="card-title">📋 Spot-Near Pozisyonlar</div>
+            <div class="card-title">📋 Açık Pozisyonlar</div>
             <table class="positions-table">
                 <thead>
                     <tr>
                         <th>Sembol</th>
                         <th>Spot Adet</th>
                         <th>Near Adet</th>
+                        <th>Anlık P&L</th>
                         <th>Beklenen</th>
-                        <th>P&L</th>
                         <th>Gün</th>
                     </tr>
                 </thead>
@@ -242,7 +306,7 @@
         </div>
         
         <div class="refresh-info">
-            Son güncelleme: <span id="lastUpdate">-</span>
+            Son güncelleme: <span id="lastUpdate">-</span> | Robot saati: <span id="robotTime">-</span>
         </div>
         
         <div class="footer">
@@ -251,8 +315,6 @@
     </div>
     
     <script>
-        // Gist URL'yi URL parametresinden al: index.html?gist=GIST_ID
-        // Örnek: https://user.github.io/repo/index.html?gist=abc123def456
         const urlParams = new URLSearchParams(window.location.search);
         const GIST_ID = urlParams.get('gist');
         
@@ -280,7 +342,35 @@
             return (n >= 0 ? '+' : '-') + formatted + ' TL';
         }
         
+        function updatePeriodCard(prefix, data) {
+            if (!data) return;
+            
+            const pnlEl = document.getElementById(prefix + 'Pnl');
+            const pnl = data.pnl || 0;
+            pnlEl.textContent = formatPnl(pnl);
+            pnlEl.className = 'card-value ' + (pnl >= 0 ? 'positive' : 'negative');
+            
+            document.getElementById(prefix + 'Comm').textContent = formatNumber(data.comm) + ' TL';
+            document.getElementById(prefix + 'Trades').textContent = data.trades || 0;
+            document.getElementById(prefix + 'Days').textContent = data.days || 0;
+        }
+        
         function updateDashboard(data) {
+            // Broker status
+            const brokerEl = document.getElementById('brokerStatus');
+            const brokerPulse = document.getElementById('brokerPulse');
+            const brokerText = document.getElementById('brokerText');
+            
+            if (data.broker !== false) {
+                brokerEl.className = 'status-indicator online';
+                brokerPulse.className = 'pulse green';
+                brokerText.textContent = 'Broker ✓';
+            } else {
+                brokerEl.className = 'status-indicator offline';
+                brokerPulse.className = 'pulse red';
+                brokerText.textContent = 'Broker ✗';
+            }
+            
             // Market status
             const marketEl = document.getElementById('marketStatus');
             const marketPulse = document.getElementById('marketPulse');
@@ -296,21 +386,6 @@
                 marketText.textContent = 'Piyasa Kapalı';
             }
             
-            // Broker status
-            const brokerEl = document.getElementById('brokerStatus');
-            const brokerPulse = document.getElementById('brokerPulse');
-            const brokerText = document.getElementById('brokerText');
-            
-            if (data.broker) {
-                brokerEl.className = 'status-indicator online';
-                brokerPulse.className = 'pulse green';
-                brokerText.textContent = 'Broker ✓';
-            } else {
-                brokerEl.className = 'status-indicator offline';
-                brokerPulse.className = 'pulse red';
-                brokerText.textContent = 'Broker ✗';
-            }
-            
             // Test mode
             const modeEl = document.getElementById('modeStatus');
             const modeText = document.getElementById('modeText');
@@ -322,15 +397,12 @@
                 modeText.textContent = '🚀 CANLI';
             }
             
-            // Toplam Beklenen Kar hesapla
-            let totalExp = 0;
-            const posData = data.positions || {};
-            Object.values(posData).forEach(p => { totalExp += (p.exp || 0); });
-            const totalExpEl = document.getElementById('totalExp');
-            totalExpEl.textContent = formatPnl(totalExp);
-            totalExpEl.className = 'card-value ' + (totalExp >= 0 ? 'positive' : 'negative');
+            // Period stats
+            updatePeriodCard('week', data.week);
+            updatePeriodCard('month', data.month);
+            updatePeriodCard('all', data.all);
             
-            // PnL
+            // Daily PnL
             const totalPnl = data.total_pnl || 0;
             const totalEl = document.getElementById('totalPnl');
             totalEl.textContent = formatPnl(totalPnl);
@@ -338,34 +410,34 @@
             
             document.getElementById('realizedPnl').textContent = formatPnl(data.daily_pnl);
             
-            // Positions
+            // Positions count
             document.getElementById('snCount').textContent = data.count || 0;
             
-            // Daily
+            // Daily trades
             document.getElementById('dailyTrades').textContent = data.trades || 0;
-            document.getElementById('dailyComm').textContent = formatNumber(data.total_comm || 0) + ' TL';
+            document.getElementById('dailyComm').textContent = formatNumber(data.total_comm) + ' TL';
             
-            // Budget - v13 uses viop_bal/spot_bal and viop_used/spot_used
+            // Risk free
+            document.getElementById('riskFree').textContent = '%' + (data.risk_free ? (data.risk_free * 100).toFixed(2) : '0.00');
+            
+            // Budget
             const viopUsed = data.viop_used || 0;
             const viopBal = data.viop_bal || 0;
             const viopTotal = viopUsed + viopBal;
             const viopPct = viopTotal > 0 ? (viopUsed / viopTotal) * 100 : 0;
-            document.getElementById('viopUsed').textContent = formatNumber(viopBal) + ' TL';
+            document.getElementById('viopBal').textContent = formatNumber(viopBal) + ' TL';
+            document.getElementById('viopUsed').textContent = formatNumber(viopUsed) + ' TL';
             document.getElementById('viopBar').style.width = Math.min(viopPct, 100) + '%';
-            document.getElementById('viopSub').textContent = formatNumber(viopUsed) + ' / ' + formatNumber(viopTotal);
             
             const spotUsed = data.spot_used || 0;
             const spotBal = data.spot_bal || 0;
             const spotTotal = spotUsed + spotBal;
             const spotPct = spotTotal > 0 ? (spotUsed / spotTotal) * 100 : 0;
-            document.getElementById('spotUsed').textContent = formatNumber(spotBal) + ' TL';
+            document.getElementById('spotBal').textContent = formatNumber(spotBal) + ' TL';
+            document.getElementById('spotUsed').textContent = formatNumber(spotUsed) + ' TL';
             document.getElementById('spotBar').style.width = Math.min(spotPct, 100) + '%';
-            document.getElementById('spotSub').textContent = formatNumber(spotUsed) + ' / ' + formatNumber(spotTotal);
             
-            // Risk free - not in v13
-            document.getElementById('riskFree').textContent = '%' + (data.risk_free ? (data.risk_free * 100).toFixed(2) : '0.00');
-            
-            // Spot-Near positions table - v13 uses "positions" with sq, nq, d
+            // Positions table
             const snTbody = document.getElementById('snPositions');
             const snData = data.positions || {};
             const snKeys = Object.keys(snData);
@@ -376,27 +448,29 @@
                 let html = '';
                 snKeys.forEach(sym => {
                     const p = snData[sym];
-                    const pnlClass = (p.pnl || 0) >= 0 ? 'pnl-positive' : 'pnl-negative';
-                    const expClass = (p.exp || 0) >= 0 ? 'pnl-positive' : 'pnl-negative';
+                    const pnl = p.pnl || 0;
+                    const exp = p.exp || 0;
+                    const pnlClass = pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+                    const expClass = exp >= 0 ? 'pnl-positive' : 'pnl-negative';
                     html += `<tr>
                         <td><strong>${sym}</strong></td>
                         <td>${p.sq || '-'}</td>
                         <td>${p.nq || '-'}</td>
-                        <td class="${expClass}">${formatPnl(p.exp)}</td>
-                        <td class="${pnlClass}">${formatPnl(p.pnl)}</td>
+                        <td class="${pnlClass}">${formatPnl(pnl)}</td>
+                        <td class="${expClass}">${formatPnl(exp)}</td>
                         <td>${p.d || '-'}</td>
                     </tr>`;
                 });
                 snTbody.innerHTML = html;
             }
             
-            // Last update
-            document.getElementById('lastUpdate').textContent = data.timestamp || new Date().toLocaleString('tr-TR');
+            // Timestamps
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('tr-TR');
+            document.getElementById('robotTime').textContent = data.ts || '-';
         }
         
         async function fetchData() {
             try {
-                // Cache buster
                 const url = GIST_RAW_URL + '?t=' + Date.now();
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -409,10 +483,7 @@
             }
         }
         
-        // İlk yükleme
         fetchData();
-        
-        // Her 30 saniyede güncelle
         setInterval(fetchData, 30000);
     </script>
 </body>
