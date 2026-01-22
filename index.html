@@ -307,7 +307,7 @@
             
             // Daily
             document.getElementById('dailyTrades').textContent = data.trades || 0;
-            document.getElementById('dailyComm').textContent = '- TL';
+            document.getElementById('dailyComm').textContent = formatNumber(data.total_comm || 0) + ' TL';
             
             // Budget - v13 uses viop_bal/spot_bal and viop_used/spot_used
             const viopUsed = data.viop_used || 0;
