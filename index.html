@@ -238,11 +238,23 @@
     </div>
     
     <script>
-        // GIST URL - stats.json
-        const GIST_RAW_URL = 'https://gist.githubusercontent.com/USER/GIST_ID/raw/arb_stats.json';
+        // Gist URL'yi URL parametresinden al: index.html?gist=GIST_ID
+        // Örnek: https://user.github.io/repo/index.html?gist=abc123def456
+        const urlParams = new URLSearchParams(window.location.search);
+        const GIST_ID = urlParams.get('gist');
         
-        // Veya doğrudan URL girebilirsiniz:
-        // const GIST_RAW_URL = 'https://gist.githubusercontent.com/xxx/yyy/raw/arb_stats.json';
+        if (!GIST_ID) {
+            document.body.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;color:#fff;">
+                    <h2>⚠️ Gist ID Gerekli</h2>
+                    <p style="color:#888;margin-top:10px;">Kullanım: <code style="background:#333;padding:5px 10px;border-radius:4px;">index.html?gist=GIST_ID</code></p>
+                    <p style="color:#666;margin-top:20px;font-size:0.9rem;">Gist ID'nizi GitHub Gist sayfasından alabilirsiniz.</p>
+                </div>
+            `;
+            throw new Error('Gist ID not provided');
+        }
+        
+        const GIST_RAW_URL = `https://gist.githubusercontent.com/raw/${GIST_ID}/arb_stats.json`;
         
         function formatNumber(n) {
             if (n === undefined || n === null) return '-';
