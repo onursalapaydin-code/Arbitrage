@@ -164,6 +164,10 @@
                     <div class="pulse" id="marketPulse"></div>
                     <span id="marketText">Yükleniyor...</span>
                 </div>
+                <div class="status-indicator" id="brokerStatus">
+                    <div class="pulse" id="brokerPulse"></div>
+                    <span id="brokerText">-</span>
+                </div>
                 <div class="status-indicator" id="modeStatus">
                     <span id="modeText">-</span>
                 </div>
@@ -290,6 +294,21 @@
                 marketEl.className = 'status-indicator offline';
                 marketPulse.className = 'pulse red';
                 marketText.textContent = 'Piyasa Kapalı';
+            }
+            
+            // Broker status
+            const brokerEl = document.getElementById('brokerStatus');
+            const brokerPulse = document.getElementById('brokerPulse');
+            const brokerText = document.getElementById('brokerText');
+            
+            if (data.broker) {
+                brokerEl.className = 'status-indicator online';
+                brokerPulse.className = 'pulse green';
+                brokerText.textContent = 'Broker ✓';
+            } else {
+                brokerEl.className = 'status-indicator offline';
+                brokerPulse.className = 'pulse red';
+                brokerText.textContent = 'Broker ✗';
             }
             
             // Test mode
