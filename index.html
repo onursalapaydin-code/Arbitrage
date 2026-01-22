@@ -172,6 +172,12 @@
         
         <div class="grid">
             <div class="card">
+                <div class="card-title">🎯 Beklenen Kar</div>
+                <div class="card-value" id="totalExp">-</div>
+                <div class="card-sub">Tüm pozisyonların toplamı</div>
+            </div>
+            
+            <div class="card">
                 <div class="card-title">💰 Toplam P&L</div>
                 <div class="card-value" id="totalPnl">-</div>
                 <div class="card-sub">Gerçekleşen: <span id="realizedPnl">-</span></div>
@@ -188,19 +194,21 @@
                 <div class="card-value neutral" id="dailyTrades">-</div>
                 <div class="card-sub">Komisyon: <span id="dailyComm">-</span></div>
             </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">💵 Spot Bütçe</div>
+                <div class="card-value neutral" id="spotUsed">-</div>
+                <div class="budget-bar"><div class="budget-fill spot" id="spotBar"></div></div>
+                <div class="card-sub" id="spotSub">- / -</div>
+            </div>
             
             <div class="card">
                 <div class="card-title">💳 VIOP Bütçe</div>
                 <div class="card-value neutral" id="viopUsed">-</div>
                 <div class="budget-bar"><div class="budget-fill viop" id="viopBar"></div></div>
                 <div class="card-sub" id="viopSub">- / -</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">💵 Spot Bütçe</div>
-                <div class="card-value neutral" id="spotUsed">-</div>
-                <div class="budget-bar"><div class="budget-fill spot" id="spotBar"></div></div>
-                <div class="card-sub" id="spotSub">- / -</div>
             </div>
             
             <div class="card">
@@ -218,12 +226,13 @@
                         <th>Sembol</th>
                         <th>Spot Adet</th>
                         <th>Near Adet</th>
+                        <th>Beklenen</th>
                         <th>P&L</th>
                         <th>Gün</th>
                     </tr>
                 </thead>
                 <tbody id="snPositions">
-                    <tr><td colspan="5" class="no-data">Veri bekleniyor...</td></tr>
+                    <tr><td colspan="6" class="no-data">Veri bekleniyor...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -294,6 +303,14 @@
                 modeText.textContent = '🚀 CANLI';
             }
             
+            // Toplam Beklenen Kar hesapla
+            let totalExp = 0;
+            const posData = data.positions || {};
+            Object.values(posData).forEach(p => { totalExp += (p.exp || 0); });
+            const totalExpEl = document.getElementById('totalExp');
+            totalExpEl.textContent = formatPnl(totalExp);
+            totalExpEl.className = 'card-value ' + (totalExp >= 0 ? 'positive' : 'negative');
+            
             // PnL
             const totalPnl = data.total_pnl || 0;
             const totalEl = document.getElementById('totalPnl');
@@ -335,16 +352,18 @@
             const snKeys = Object.keys(snData);
             
             if (snKeys.length === 0) {
-                snTbody.innerHTML = '<tr><td colspan="5" class="no-data">Açık pozisyon yok</td></tr>';
+                snTbody.innerHTML = '<tr><td colspan="6" class="no-data">Açık pozisyon yok</td></tr>';
             } else {
                 let html = '';
                 snKeys.forEach(sym => {
                     const p = snData[sym];
                     const pnlClass = (p.pnl || 0) >= 0 ? 'pnl-positive' : 'pnl-negative';
+                    const expClass = (p.exp || 0) >= 0 ? 'pnl-positive' : 'pnl-negative';
                     html += `<tr>
                         <td><strong>${sym}</strong></td>
                         <td>${p.sq || '-'}</td>
                         <td>${p.nq || '-'}</td>
+                        <td class="${expClass}">${formatPnl(p.exp)}</td>
                         <td class="${pnlClass}">${formatPnl(p.pnl)}</td>
                         <td>${p.d || '-'}</td>
                     </tr>`;
