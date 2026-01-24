@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbitraj Dashboard v14</title>
+    <title>Arbitraj Dashboard v15</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e4; min-height: 100vh; padding: 20px; }
@@ -95,6 +95,8 @@
                     <span id="badge-broker" class="badge badge-broker">-</span>
                     <span id="badge-test" class="badge badge-test" style="display:none">TEST</span>
                     <span id="badge-pending" class="badge badge-pending" style="display:none">⏳</span>
+                    <span id="badge-paused" class="badge" style="display:none;background:#f59e0b;color:#000;font-weight:600;">⏸️ DURAKLATILDI</span>
+                    <button id="pause-btn" class="badge" style="background:#f59e0b;color:#000;border:none;cursor:pointer;font-weight:600;" onclick="sendPauseCommand()">⏸ DURAKLAT</button>
                     <button id="stop-btn" class="badge" style="background:#ef4444;color:#fff;border:none;cursor:pointer;font-weight:600;" onclick="sendStopCommand()">⏹ STOP</button>
                 </div>
             </div>
@@ -260,7 +262,7 @@
                 });
                 
                 if (resp.ok) {
-                    alert('STOP komutu gönderildi! Robot 30 saniye içinde duracak.');
+                    alert('STOP komutu gönderildi! Robot 1 dakika içinde duracak.');
                     document.getElementById('stop-btn').textContent = '⏹ Gönderildi';
                     document.getElementById('stop-btn').style.background = '#6b7280';
                 } else {
@@ -268,6 +270,68 @@
                 }
             } catch(e) {
                 alert('Hata: ' + e.message);
+            }
+        }
+        
+        // Robot duraklatma durumu
+        let robotPaused = false;
+        
+        async function sendPauseCommand() {
+            if (!GIST_ID || !GIST_TOKEN) {
+                alert('Komut göndermek için Ayarlar > Bağlantı bölümünden token girmeniz gerekiyor.');
+                return;
+            }
+            
+            const command = robotPaused ? 'RESUME' : 'PAUSE';
+            const confirmMsg = robotPaused ? 'Robotu devam ettirmek istiyor musunuz?' : 'Robotu duraklatmak istiyor musunuz?';
+            
+            if (!confirm(confirmMsg)) return;
+            
+            try {
+                const authPrefix = GIST_TOKEN.startsWith('github_pat_') ? 'Bearer ' : 'token ';
+                const body = JSON.stringify({
+                    files: {
+                        'arb_command.json': {
+                            content: JSON.stringify({command: command, ts: new Date().toLocaleTimeString('tr-TR')})
+                        }
+                    }
+                });
+                
+                const resp = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': authPrefix + GIST_TOKEN,
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'ArbDashboard'
+                    },
+                    body: body
+                });
+                
+                if (resp.ok) {
+                    robotPaused = !robotPaused;
+                    updatePauseButton();
+                    alert(robotPaused ? 'PAUSE komutu gönderildi!' : 'RESUME komutu gönderildi!');
+                } else {
+                    alert('Hata: ' + resp.status + ' - Token geçersiz olabilir.');
+                }
+            } catch(e) {
+                alert('Hata: ' + e.message);
+            }
+        }
+        
+        function updatePauseButton() {
+            const btn = document.getElementById('pause-btn');
+            const badge = document.getElementById('badge-paused');
+            if (robotPaused) {
+                btn.textContent = '▶ DEVAM';
+                btn.style.background = '#10b981';
+                btn.style.color = '#fff';
+                badge.style.display = 'inline-block';
+            } else {
+                btn.textContent = '⏸ DURAKLAT';
+                btn.style.background = '#f59e0b';
+                btn.style.color = '#000';
+                badge.style.display = 'none';
             }
         }
         
@@ -384,6 +448,22 @@
                 document.getElementById('risk-free').textContent = ((d.risk_free||0)*100).toFixed(2)+'%';
                 document.getElementById('set-gist-status').textContent = 'Bağlı';
                 document.getElementById('set-gist-status').className = 'setting-value highlight';
+                
+                // arb_command.json'dan pause durumunu kontrol et
+                try {
+                    const cmdResp = await fetch(getGistUrl('arb_command.json'));
+                    if (cmdResp.ok) {
+                        const cmd = await cmdResp.json();
+                        if (cmd.command === 'PAUSE') {
+                            robotPaused = true;
+                            updatePauseButton();
+                        } else if (cmd.command === 'NONE' || cmd.command === 'RESUME') {
+                            robotPaused = false;
+                            updatePauseButton();
+                        }
+                    }
+                } catch(cmdErr) { console.log('Command check:', cmdErr); }
+                
             } catch(e) { 
                 console.error(e);
                 document.getElementById('set-gist-status').textContent = 'Hata';
