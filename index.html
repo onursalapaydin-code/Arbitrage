@@ -21,7 +21,7 @@
         .badge-pending { background: #f59e0b; color: #000; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .nav-links { display: flex; gap: 10px; }
-        .nav-link { padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 6px; color: #9ca3af; text-decoration: none; font-size: 0.85rem; transition: all 0.2s; }
+        .nav-link { padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 6px; color: #9ca3af; text-decoration: none; font-size: 0.85rem; transition: all 0.2s; cursor: pointer; }
         .nav-link:hover, .nav-link.active { background: rgba(59, 130, 246, 0.3); color: #fff; }
         .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 20px; }
         .card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
@@ -71,10 +71,13 @@
         .setting-value { color: #e4e4e4; font-weight: 500; font-family: 'Consolas', monospace; }
         .setting-value.highlight { color: #10b981; }
         .setting-value.warning { color: #f59e0b; }
-        .gist-config { background: rgba(59,130,246,0.1); border: 1px solid #3b82f6; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        .gist-config input { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 8px 12px; color: #fff; width: 100%; margin-top: 5px; font-family: monospace; }
-        .gist-config button { margin-top: 10px; padding: 8px 16px; background: #3b82f6; border: none; border-radius: 4px; color: #fff; cursor: pointer; }
-        .gist-config button:hover { background: #2563eb; }
+        .setup-box { background: rgba(59,130,246,0.1); border: 1px solid #3b82f6; border-radius: 12px; padding: 30px; text-align: center; margin: 50px auto; max-width: 500px; }
+        .setup-box h2 { margin-bottom: 15px; color: #3b82f6; }
+        .setup-box p { margin-bottom: 20px; color: #9ca3af; }
+        .setup-box input { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 12px 15px; color: #fff; width: 100%; margin-bottom: 15px; font-family: monospace; font-size: 0.9rem; }
+        .setup-box button { padding: 12px 30px; background: #3b82f6; border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 1rem; font-weight: 500; }
+        .setup-box button:hover { background: #2563eb; }
+        .connected-info { font-size: 0.8rem; color: #6b7280; margin-top: 15px; }
         @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .cards { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -84,9 +87,9 @@
             <h1>📊 Arbitraj Dashboard</h1>
             <div class="header-right">
                 <div class="nav-links">
-                    <a href="#" class="nav-link active" data-page="main">Ana Sayfa</a>
-                    <a href="#" class="nav-link" data-page="logs">📋 Loglar</a>
-                    <a href="#" class="nav-link" data-page="settings">⚙️ Ayarlar</a>
+                    <span class="nav-link active" data-page="main">Ana Sayfa</span>
+                    <span class="nav-link" data-page="logs">📋 Loglar</span>
+                    <span class="nav-link" data-page="settings">⚙️ Ayarlar</span>
                 </div>
                 <div class="status-badges">
                     <span id="badge-market" class="badge badge-market">-</span>
@@ -97,14 +100,21 @@
             </div>
         </div>
         
-        <!-- Ana Sayfa -->
-        <div id="page-main" class="page active">
-            <div class="gist-config" id="gist-config">
-                <strong>🔗 Gist Yapılandırması</strong><br>
-                <small>Gist URL'sini yapıştırın:</small>
-                <input type="text" id="gist-id-input" placeholder="https://gist.github.com/username/gist_id">
-                <button onclick="saveGistId()">Kaydet ve Yükle</button>
+        <!-- Setup Sayfası -->
+        <div id="page-setup" class="page">
+            <div class="setup-box">
+                <h2>🔗 Dashboard Bağlantısı</h2>
+                <p>Robot verilerini görüntülemek için Gist URL'nizi girin</p>
+                <input type="text" id="gist-url-input" placeholder="https://gist.github.com/username/gist_id">
+                <button onclick="saveGistConfig()">Bağlan</button>
+                <div class="connected-info">
+                    Gist URL'nizi robot ayarlarından bulabilirsiniz
+                </div>
             </div>
+        </div>
+        
+        <!-- Ana Sayfa -->
+        <div id="page-main" class="page">
             <div id="pending-alert" class="pending-alert hidden">
                 <span>⚠️</span>
                 <div><strong id="pending-count">0</strong> bekleyen emir var.</div>
@@ -140,7 +150,7 @@
                         <button class="log-btn" onclick="scrollToBottom()">⬇️ Sona Git</button>
                     </div>
                 </div>
-                <div id="log-content" class="log-content">Gist ID girilmedi...</div>
+                <div id="log-content" class="log-content">Yükleniyor...</div>
             </div>
         </div>
         
@@ -173,6 +183,15 @@
                     <div class="setting-row"><span class="setting-label">BB Periyodu</span><span id="set-bb-period" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Döngü (ms)</span><span id="set-loop-ms" class="setting-value">-</span></div>
                 </div>
+                <div class="settings-card">
+                    <div class="settings-card-title">🔗 Bağlantı</div>
+                    <div class="setting-row"><span class="setting-label">Gist Durumu</span><span id="set-gist-status" class="setting-value highlight">Bağlı</span></div>
+                    <div class="setting-row"><span class="setting-label">Son Güncelleme</span><span id="set-last-update" class="setting-value">-</span></div>
+                    <div class="setting-row">
+                        <span class="setting-label">Bağlantıyı Sıfırla</span>
+                        <button class="log-btn" onclick="resetConnection()">Sıfırla</button>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -184,44 +203,69 @@
     </div>
     
     <script>
-        let GIST_ID = localStorage.getItem('arbGistId') || '';
         let GIST_USER = localStorage.getItem('arbGistUser') || '';
+        let GIST_ID = localStorage.getItem('arbGistId') || '';
+        let lastUpdateTime = null;
         
         function getGistUrl(file) {
             return `https://gist.githubusercontent.com/${GIST_USER}/${GIST_ID}/raw/${file}?t=${Date.now()}`;
         }
         
-        function saveGistId() {
-            const input = document.getElementById('gist-id-input').value.trim();
-            // URL veya sadece ID olabilir
-            if (input.includes('github.com')) {
-                // URL'den parse et: https://gist.github.com/USERNAME/GIST_ID
-                const parts = input.split('/');
-                GIST_USER = parts[parts.length - 2];
+        function saveGistConfig() {
+            const input = document.getElementById('gist-url-input').value.trim();
+            if (input.includes('gist.github.com')) {
+                const parts = input.replace('#', '/').split('/').filter(p => p && p !== 'file');
+                GIST_USER = parts[parts.length - 2] || parts[parts.length - 3];
                 GIST_ID = parts[parts.length - 1].split('#')[0];
-            } else if (input.includes('/')) {
-                // USERNAME/GIST_ID formatı
-                const parts = input.split('/');
-                GIST_USER = parts[0];
-                GIST_ID = parts[1];
+                
+                // gist.github.com/user/id formatı için
+                if (input.includes('gist.github.com')) {
+                    const match = input.match(/gist\.github\.com\/([^\/]+)\/([a-f0-9]+)/);
+                    if (match) {
+                        GIST_USER = match[1];
+                        GIST_ID = match[2];
+                    }
+                }
             } else {
-                alert('Lütfen tam Gist URL\'sini yapıştırın');
+                alert('Geçerli bir Gist URL\'si girin\nÖrnek: https://gist.github.com/username/gist_id');
                 return;
             }
+            
             if (GIST_ID && GIST_USER) {
                 localStorage.setItem('arbGistId', GIST_ID);
                 localStorage.setItem('arbGistUser', GIST_USER);
-                document.getElementById('gist-config').style.display = 'none';
+                showPage('main');
                 fetchData();
-                refreshLogs();
-                loadSettings();
             }
         }
         
-        if (GIST_ID && GIST_USER) {
-            document.getElementById('gist-id-input').value = `${GIST_USER}/${GIST_ID}`;
-            document.getElementById('gist-config').style.display = 'none';
+        function resetConnection() {
+            localStorage.removeItem('arbGistId');
+            localStorage.removeItem('arbGistUser');
+            GIST_ID = '';
+            GIST_USER = '';
+            showPage('setup');
         }
+        
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            
+            if (!GIST_ID || !GIST_USER) {
+                document.getElementById('page-setup').classList.add('active');
+                return;
+            }
+            
+            document.getElementById('page-' + page).classList.add('active');
+            document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+            
+            if (page === 'logs') refreshLogs();
+            if (page === 'settings') loadSettings();
+        }
+        
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => showPage(link.dataset.page));
+        });
         
         function formatMoney(val) {
             if (val === undefined || val === null) return '-';
@@ -244,25 +288,13 @@
             return '<div class="log-line"><span class="log-time">'+m[1]+'</span> <span class="'+cls+'">'+m[2]+'</span></div>';
         }
         
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', e => {
-                e.preventDefault();
-                const page = e.target.dataset.page;
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                e.target.classList.add('active');
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                document.getElementById('page-'+page).classList.add('active');
-                if (page==='logs') refreshLogs();
-                if (page==='settings') loadSettings();
-            });
-        });
-        
         async function fetchData() {
-            if (!GIST_ID) return;
+            if (!GIST_ID || !GIST_USER) return;
             try {
                 const r = await fetch(getGistUrl('arb_stats.json'));
-                if (!r.ok) return;
+                if (!r.ok) { document.getElementById('set-gist-status').textContent = 'Bağlantı Hatası'; return; }
                 const d = await r.json();
+                lastUpdateTime = d.ts;
                 
                 document.getElementById('badge-market').textContent = d.market?'Piyasa Açık':'Piyasa Kapalı';
                 document.getElementById('badge-market').className = 'badge badge-market'+(d.market?'':' closed');
@@ -318,11 +350,17 @@
                 document.getElementById('update-time').textContent = d.ts || new Date().toLocaleTimeString('tr-TR');
                 document.getElementById('total-comm').textContent = (d.total_comm||0).toFixed(2);
                 document.getElementById('risk-free').textContent = ((d.risk_free||0)*100).toFixed(2)+'%';
-            } catch(e) { console.error(e); }
+                document.getElementById('set-gist-status').textContent = 'Bağlı';
+                document.getElementById('set-gist-status').className = 'setting-value highlight';
+            } catch(e) { 
+                console.error(e);
+                document.getElementById('set-gist-status').textContent = 'Hata';
+                document.getElementById('set-gist-status').className = 'setting-value warning';
+            }
         }
         
         async function refreshLogs() {
-            if (!GIST_ID) { document.getElementById('log-content').innerHTML='Gist ID girilmedi...'; return; }
+            if (!GIST_ID || !GIST_USER) return;
             try {
                 const r = await fetch(getGistUrl('arb_logs.txt'));
                 if (!r.ok) { document.getElementById('log-content').innerHTML='<div style="color:#6b7280">Log dosyası bulunamadı.</div>'; return; }
@@ -333,7 +371,8 @@
         }
         
         async function loadSettings() {
-            if (!GIST_ID) return;
+            if (!GIST_ID || !GIST_USER) return;
+            document.getElementById('set-last-update').textContent = lastUpdateTime || '-';
             try {
                 const r = await fetch(getGistUrl('arb_settings.json'));
                 if (!r.ok) return;
@@ -362,8 +401,14 @@
         
         function scrollToBottom() { const el=document.getElementById('log-content'); el.scrollTop=el.scrollHeight; }
         
-        if (GIST_ID) { fetchData(); }
-        setInterval(fetchData, 30000);  // 30 saniyede bir
+        // Başlangıç
+        if (GIST_ID && GIST_USER) {
+            showPage('main');
+            fetchData();
+        } else {
+            showPage('setup');
+        }
+        setInterval(fetchData, 30000);
     </script>
 </body>
 </html>
