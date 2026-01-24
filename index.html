@@ -398,6 +398,12 @@
                 document.getElementById('badge-broker').className = 'badge badge-broker'+(d.broker?'':' disconnected');
                 document.getElementById('badge-test').style.display = d.test?'inline':'none';
                 
+                // Paused durumunu stats.json'dan oku (form veya dashboard'dan duraklatılmış olabilir)
+                if (d.paused !== undefined) {
+                    robotPaused = d.paused;
+                    updatePauseButton();
+                }
+                
                 const pc = d.pending_count||0;
                 document.getElementById('badge-pending').style.display = pc>0?'inline':'none';
                 document.getElementById('badge-pending').textContent = '⏳ '+pc;
@@ -448,21 +454,6 @@
                 document.getElementById('risk-free').textContent = ((d.risk_free||0)*100).toFixed(2)+'%';
                 document.getElementById('set-gist-status').textContent = 'Bağlı';
                 document.getElementById('set-gist-status').className = 'setting-value highlight';
-                
-                // arb_command.json'dan pause durumunu kontrol et
-                try {
-                    const cmdResp = await fetch(getGistUrl('arb_command.json'));
-                    if (cmdResp.ok) {
-                        const cmd = await cmdResp.json();
-                        if (cmd.command === 'PAUSE') {
-                            robotPaused = true;
-                            updatePauseButton();
-                        } else if (cmd.command === 'NONE' || cmd.command === 'RESUME') {
-                            robotPaused = false;
-                            updatePauseButton();
-                        }
-                    }
-                } catch(cmdErr) { console.log('Command check:', cmdErr); }
                 
             } catch(e) { 
                 console.error(e);
