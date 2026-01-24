@@ -3,488 +3,469 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbitraj Robot v13 - Spot-Near Dashboard</title>
+    <title>Arbitraj Dashboard v14</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #e8e8e8;
+            color: #e4e4e4; 
             min-height: 100vh;
             padding: 20px;
         }
         .container { max-width: 1400px; margin: 0 auto; }
         
-        header {
-            display: flex;
-            justify-content: space-between;
+        /* Header */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
             align-items: center;
-            padding: 15px 25px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
             background: rgba(255,255,255,0.05);
             border-radius: 12px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: linear-gradient(90deg, #00d4ff, #00ff88);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .header h1 { font-size: 1.5rem; font-weight: 600; }
+        .status-badges { display: flex; gap: 10px; }
+        .badge { 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-size: 0.85rem;
+            font-weight: 500;
         }
-        .version { color: #888; font-size: 0.9rem; }
+        .badge-market { background: #10b981; color: #000; }
+        .badge-market.closed { background: #ef4444; color: #fff; }
+        .badge-broker { background: #3b82f6; }
+        .badge-broker.disconnected { background: #f59e0b; }
+        .badge-test { background: #8b5cf6; }
+        .badge-pending { background: #f59e0b; color: #000; animation: pulse 2s infinite; }
         
-        .status-bar {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-        .status-indicator.online { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
-        .status-indicator.offline { background: rgba(255, 68, 68, 0.2); color: #ff4444; }
-        .status-indicator.test { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
-        .pulse {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        .pulse.green { background: #00ff88; }
-        .pulse.red { background: #ff4444; }
-        .pulse.yellow { background: #ffc107; }
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-        
+        /* Cards Grid */
+        .cards { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 16px; 
+            margin-bottom: 20px;
+        }
         .card {
             background: rgba(255,255,255,0.05);
             border-radius: 12px;
             padding: 20px;
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .card.highlight-week { border-left: 3px solid #00d4ff; }
-        .card.highlight-month { border-left: 3px solid #ff9800; }
-        .card.highlight-all { border-left: 3px solid #9c27b0; }
-        
-        .card-title {
-            font-size: 0.85rem;
-            color: #888;
+        .card-title { 
+            font-size: 0.85rem; 
+            color: #9ca3af; 
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
         }
-        .card-value {
-            font-size: 1.8rem;
-            font-weight: bold;
+        .card-value { 
+            font-size: 1.8rem; 
+            font-weight: 700;
         }
-        .card-value.positive { color: #00ff88; }
-        .card-value.negative { color: #ff4444; }
-        .card-value.neutral { color: #00d4ff; }
-        .card-sub { font-size: 0.85rem; color: #666; margin-top: 5px; }
+        .card-sub { font-size: 0.85rem; color: #6b7280; margin-top: 4px; }
+        .positive { color: #10b981; }
+        .negative { color: #ef4444; }
+        .neutral { color: #9ca3af; }
         
-        .period-stats {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .period-stat {
+        /* Tables */
+        .table-section {
             background: rgba(255,255,255,0.05);
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .period-stat span { color: #888; }
-        
-        .budget-bar {
-            height: 8px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        .budget-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
-        }
-        .budget-fill.viop { background: linear-gradient(90deg, #00d4ff, #0099cc); }
-        .budget-fill.spot { background: linear-gradient(90deg, #00ff88, #00cc6a); }
-        
-        .section-title {
-            font-size: 1.1rem;
+        .table-title { 
+            font-size: 1.1rem; 
+            font-weight: 600; 
             margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .positions-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
+        .table-title .count {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
         }
-        .positions-table th {
-            text-align: left;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            font-size: 0.8rem;
-            color: #888;
-            text-transform: uppercase;
-        }
-        .positions-table td {
-            padding: 12px;
+        table { width: 100%; border-collapse: collapse; }
+        th, td { 
+            padding: 12px; 
+            text-align: left; 
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .positions-table tr:hover { background: rgba(255,255,255,0.02); }
+        th { 
+            color: #9ca3af; 
+            font-weight: 500; 
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        td { font-size: 0.95rem; }
+        tr:hover { background: rgba(255,255,255,0.03); }
         
-        .pnl-positive { color: #00ff88; }
-        .pnl-negative { color: #ff4444; }
+        /* Pending Orders Alert */
+        .pending-alert {
+            background: linear-gradient(135deg, #f59e0b22 0%, #f5720b22 100%);
+            border: 1px solid #f59e0b;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .pending-alert.hidden { display: none; }
+        .pending-icon { font-size: 1.5rem; }
+        .pending-text { flex: 1; }
+        .pending-text strong { color: #f59e0b; }
         
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-label { font-size: 0.8rem; color: #6b7280; margin-bottom: 5px; }
+        .stat-value { font-size: 1.3rem; font-weight: 600; }
+        .stat-sub { font-size: 0.75rem; color: #4b5563; margin-top: 3px; }
+        
+        /* Footer */
         .footer {
             text-align: center;
-            padding: 20px;
-            color: #666;
+            color: #4b5563;
             font-size: 0.85rem;
+            margin-top: 20px;
         }
+        .update-time { color: #6b7280; }
         
-        .no-data {
+        /* Loading */
+        .loading {
             text-align: center;
             padding: 40px;
-            color: #666;
+            color: #6b7280;
         }
         
-        .refresh-info {
-            font-size: 0.75rem;
-            color: #555;
-            text-align: right;
-            margin-top: 10px;
-        }
-        
-        @media (max-width: 768px) {
-            .grid { grid-template-columns: 1fr 1fr; }
-            .grid-3 { grid-template-columns: 1fr; }
-            .card-value { font-size: 1.4rem; }
-            header { flex-direction: column; gap: 15px; }
-        }
-        @media (max-width: 480px) {
-            .grid { grid-template-columns: 1fr; }
+        /* Error */
+        .error {
+            background: #ef444422;
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <div>
-                <div class="logo">📊 Arbitraj Robot</div>
-                <div class="version">v13 - Spot-Near Only</div>
-            </div>
-            <div class="status-bar">
-                <div class="status-indicator" id="brokerStatus">
-                    <div class="pulse" id="brokerPulse"></div>
-                    <span id="brokerText">Broker</span>
-                </div>
-                <div class="status-indicator" id="marketStatus">
-                    <div class="pulse" id="marketPulse"></div>
-                    <span id="marketText">Yükleniyor...</span>
-                </div>
-                <div class="status-indicator" id="modeStatus">
-                    <span id="modeText">-</span>
-                </div>
-            </div>
-        </header>
-        
-        <!-- Dönemsel Performans -->
-        <div class="section-title">📈 Performans Özeti</div>
-        <div class="grid-3">
-            <div class="card highlight-week">
-                <div class="card-title">📅 Bu Hafta (7 Gün)</div>
-                <div class="card-value" id="weekPnl">-</div>
-                <div class="period-stats">
-                    <div class="period-stat"><span>Komisyon:</span> <span id="weekComm">-</span></div>
-                    <div class="period-stat"><span>İşlem:</span> <span id="weekTrades">-</span></div>
-                    <div class="period-stat"><span>Gün:</span> <span id="weekDays">-</span></div>
-                </div>
-            </div>
-            
-            <div class="card highlight-month">
-                <div class="card-title">📆 Bu Ay (30 Gün)</div>
-                <div class="card-value" id="monthPnl">-</div>
-                <div class="period-stats">
-                    <div class="period-stat"><span>Komisyon:</span> <span id="monthComm">-</span></div>
-                    <div class="period-stat"><span>İşlem:</span> <span id="monthTrades">-</span></div>
-                    <div class="period-stat"><span>Gün:</span> <span id="monthDays">-</span></div>
-                </div>
-            </div>
-            
-            <div class="card highlight-all">
-                <div class="card-title">🏆 Tüm Zamanlar</div>
-                <div class="card-value" id="allPnl">-</div>
-                <div class="period-stats">
-                    <div class="period-stat"><span>Komisyon:</span> <span id="allComm">-</span></div>
-                    <div class="period-stat"><span>İşlem:</span> <span id="allTrades">-</span></div>
-                    <div class="period-stat"><span>Gün:</span> <span id="allDays">-</span></div>
-                </div>
+        <div class="header">
+            <h1>📊 Arbitraj Dashboard</h1>
+            <div class="status-badges">
+                <span id="badge-market" class="badge badge-market">Piyasa Açık</span>
+                <span id="badge-broker" class="badge badge-broker">Broker ✓</span>
+                <span id="badge-test" class="badge badge-test" style="display:none">TEST</span>
+                <span id="badge-pending" class="badge badge-pending" style="display:none">⏳ Bekleyen Emir</span>
             </div>
         </div>
         
-        <!-- Günlük Durum -->
-        <div class="section-title">📊 Günlük Durum</div>
-        <div class="grid">
-            <div class="card">
-                <div class="card-title">💰 Açık P&L</div>
-                <div class="card-value" id="totalPnl">-</div>
-                <div class="card-sub">Gerçekleşen: <span id="realizedPnl">-</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">📈 Pozisyon</div>
-                <div class="card-value neutral" id="snCount">-</div>
-                <div class="card-sub">Açık pozisyon sayısı</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">🔄 Günlük İşlem</div>
-                <div class="card-value neutral" id="dailyTrades">-</div>
-                <div class="card-sub">Komisyon: <span id="dailyComm">-</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">📊 Risksiz Faiz</div>
-                <div class="card-value neutral" id="riskFree">-</div>
-                <div class="card-sub">Yıllık (TAHVIL-G)</div>
+        <div id="pending-alert" class="pending-alert hidden">
+            <span class="pending-icon">⚠️</span>
+            <div class="pending-text">
+                <strong id="pending-count">0</strong> bekleyen emir var. Bu emirler kısmi dolmuş ve tamamlanmayı bekliyor.
             </div>
         </div>
         
-        <!-- Bütçe -->
-        <div class="section-title">💳 Bütçe Durumu</div>
-        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="cards">
             <div class="card">
-                <div class="card-title">VİOP Teminat</div>
-                <div class="card-value neutral" id="viopBal">-</div>
-                <div class="budget-bar"><div class="budget-fill viop" id="viopBar"></div></div>
-                <div class="card-sub">Kullanılan: <span id="viopUsed">-</span></div>
+                <div class="card-title">Günlük P&L</div>
+                <div id="daily-pnl" class="card-value">-</div>
+                <div id="daily-trades" class="card-sub">- işlem</div>
             </div>
-            
             <div class="card">
-                <div class="card-title">Spot Bakiye</div>
-                <div class="card-value neutral" id="spotBal">-</div>
-                <div class="budget-bar"><div class="budget-fill spot" id="spotBar"></div></div>
-                <div class="card-sub">Kullanılan: <span id="spotUsed">-</span></div>
+                <div class="card-title">Açık Pozisyon P&L</div>
+                <div id="total-pnl" class="card-value">-</div>
+                <div id="pos-count" class="card-sub">- pozisyon</div>
+            </div>
+            <div class="card">
+                <div class="card-title">VIOP Bakiye</div>
+                <div id="viop-bal" class="card-value">-</div>
+                <div id="viop-used" class="card-sub">Kullanılan: -</div>
+            </div>
+            <div class="card">
+                <div class="card-title">SPOT Bakiye</div>
+                <div id="spot-bal" class="card-value">-</div>
+                <div id="spot-used" class="card-sub">Kullanılan: -</div>
             </div>
         </div>
         
-        <!-- Pozisyonlar -->
-        <div class="card">
-            <div class="card-title">📋 Açık Pozisyonlar</div>
-            <table class="positions-table">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Haftalık</div>
+                <div id="week-pnl" class="stat-value">-</div>
+                <div id="week-sub" class="stat-sub">- işlem / - gün</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Aylık</div>
+                <div id="month-pnl" class="stat-value">-</div>
+                <div id="month-sub" class="stat-sub">- işlem / - gün</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Toplam</div>
+                <div id="all-pnl" class="stat-value">-</div>
+                <div id="all-sub" class="stat-sub">- işlem / - gün</div>
+            </div>
+        </div>
+        
+        <!-- Bekleyen Emirler Tablosu -->
+        <div id="pending-section" class="table-section" style="display:none">
+            <div class="table-title">
+                ⏳ Bekleyen Emirler
+                <span id="pending-table-count" class="count">0</span>
+            </div>
+            <table>
                 <thead>
                     <tr>
                         <th>Sembol</th>
-                        <th>Spot Adet</th>
-                        <th>Near Adet</th>
-                        <th>Anlık P&L</th>
-                        <th>Beklenen</th>
-                        <th>Gün</th>
+                        <th>Yön</th>
+                        <th>Miktar</th>
+                        <th>Fiyat</th>
+                        <th>Dolum</th>
+                        <th>Bekleme</th>
                     </tr>
                 </thead>
-                <tbody id="snPositions">
-                    <tr><td colspan="6" class="no-data">Veri bekleniyor...</td></tr>
-                </tbody>
+                <tbody id="pending-tbody"></tbody>
             </table>
         </div>
         
-        <div class="refresh-info">
-            Son güncelleme: <span id="lastUpdate">-</span> | Robot saati: <span id="robotTime">-</span>
+        <!-- Pozisyonlar Tablosu -->
+        <div class="table-section">
+            <div class="table-title">
+                📈 Açık Pozisyonlar
+                <span id="positions-count" class="count">0</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sembol</th>
+                        <th>Spot</th>
+                        <th>Near</th>
+                        <th>Giriş Spread</th>
+                        <th>Beklenen Kar</th>
+                        <th>Büyütme</th>
+                    </tr>
+                </thead>
+                <tbody id="positions-tbody"></tbody>
+            </table>
         </div>
         
         <div class="footer">
-            BİST Spot-Near Arbitraj Robot Dashboard | Gist üzerinden otomatik güncelleme
+            <span class="update-time">Son güncelleme: <span id="update-time">-</span></span>
+            <br>
+            <span>Komisyon: <span id="total-comm">-</span> TL | Risk-Free: <span id="risk-free">-</span></span>
         </div>
     </div>
     
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const GIST_ID = urlParams.get('gist');
+        // Gist URL'ini buraya gir
+        const GIST_ID = 'YOUR_GIST_ID_HERE';
+        const GIST_URL = `https://gist.githubusercontent.com/raw/${GIST_ID}/arb_stats.json`;
         
-        if (!GIST_ID) {
-            document.body.innerHTML = `
-                <div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;color:#fff;">
-                    <h2>⚠️ Gist ID Gerekli</h2>
-                    <p style="color:#888;margin-top:10px;">Kullanım: <code style="background:#333;padding:5px 10px;border-radius:4px;">index.html?gist=GIST_ID</code></p>
-                    <p style="color:#666;margin-top:20px;font-size:0.9rem;">Gist ID'nizi GitHub Gist sayfasından alabilirsiniz.</p>
-                </div>
-            `;
-            throw new Error('Gist ID not provided');
+        // Alternatif: Lokal dosya
+        const LOCAL_URL = 'stats.json';
+        
+        // Hangi kaynağı kullanacağız
+        const USE_GIST = false;  // true = Gist, false = lokal
+        
+        function formatMoney(val) {
+            if (val === undefined || val === null) return '-';
+            const num = parseFloat(val);
+            if (isNaN(num)) return '-';
+            const formatted = Math.abs(num).toLocaleString('tr-TR', { maximumFractionDigits: 0 });
+            if (num >= 0) return formatted + ' ₺';
+            return '-' + formatted + ' ₺';
         }
         
-        const GIST_RAW_URL = `https://gist.githubusercontent.com/raw/${GIST_ID}/arb_stats.json`;
-        
-        function formatNumber(n) {
-            if (n === undefined || n === null) return '-';
-            return n.toLocaleString('tr-TR', { maximumFractionDigits: 0 });
+        function formatPercent(val) {
+            if (val === undefined || val === null) return '-';
+            return (parseFloat(val) * 100).toFixed(3) + '%';
         }
         
-        function formatPnl(n) {
-            if (n === undefined || n === null) return '-';
-            const formatted = formatNumber(Math.abs(n));
-            return (n >= 0 ? '+' : '-') + formatted + ' TL';
-        }
-        
-        function updatePeriodCard(prefix, data) {
-            if (!data) return;
-            
-            const pnlEl = document.getElementById(prefix + 'Pnl');
-            const pnl = data.pnl || 0;
-            pnlEl.textContent = formatPnl(pnl);
-            pnlEl.className = 'card-value ' + (pnl >= 0 ? 'positive' : 'negative');
-            
-            document.getElementById(prefix + 'Comm').textContent = formatNumber(data.comm) + ' TL';
-            document.getElementById(prefix + 'Trades').textContent = data.trades || 0;
-            document.getElementById(prefix + 'Days').textContent = data.days || 0;
-        }
-        
-        function updateDashboard(data) {
-            // Broker status
-            const brokerEl = document.getElementById('brokerStatus');
-            const brokerPulse = document.getElementById('brokerPulse');
-            const brokerText = document.getElementById('brokerText');
-            
-            if (data.broker !== false) {
-                brokerEl.className = 'status-indicator online';
-                brokerPulse.className = 'pulse green';
-                brokerText.textContent = 'Broker ✓';
-            } else {
-                brokerEl.className = 'status-indicator offline';
-                brokerPulse.className = 'pulse red';
-                brokerText.textContent = 'Broker ✗';
-            }
-            
-            // Market status
-            const marketEl = document.getElementById('marketStatus');
-            const marketPulse = document.getElementById('marketPulse');
-            const marketText = document.getElementById('marketText');
-            
-            if (data.market) {
-                marketEl.className = 'status-indicator online';
-                marketPulse.className = 'pulse green';
-                marketText.textContent = 'Piyasa Açık';
-            } else {
-                marketEl.className = 'status-indicator offline';
-                marketPulse.className = 'pulse red';
-                marketText.textContent = 'Piyasa Kapalı';
-            }
-            
-            // Test mode
-            const modeEl = document.getElementById('modeStatus');
-            const modeText = document.getElementById('modeText');
-            if (data.test) {
-                modeEl.className = 'status-indicator test';
-                modeText.textContent = '🧪 TEST';
-            } else {
-                modeEl.className = 'status-indicator online';
-                modeText.textContent = '🚀 CANLI';
-            }
-            
-            // Period stats
-            updatePeriodCard('week', data.week);
-            updatePeriodCard('month', data.month);
-            updatePeriodCard('all', data.all);
-            
-            // Daily PnL
-            const totalPnl = data.total_pnl || 0;
-            const totalEl = document.getElementById('totalPnl');
-            totalEl.textContent = formatPnl(totalPnl);
-            totalEl.className = 'card-value ' + (totalPnl >= 0 ? 'positive' : 'negative');
-            
-            document.getElementById('realizedPnl').textContent = formatPnl(data.daily_pnl);
-            
-            // Positions count
-            document.getElementById('snCount').textContent = data.count || 0;
-            
-            // Daily trades
-            document.getElementById('dailyTrades').textContent = data.trades || 0;
-            document.getElementById('dailyComm').textContent = formatNumber(data.total_comm) + ' TL';
-            
-            // Risk free
-            document.getElementById('riskFree').textContent = '%' + (data.risk_free ? (data.risk_free * 100).toFixed(2) : '0.00');
-            
-            // Budget
-            const viopUsed = data.viop_used || 0;
-            const viopBal = data.viop_bal || 0;
-            const viopTotal = viopUsed + viopBal;
-            const viopPct = viopTotal > 0 ? (viopUsed / viopTotal) * 100 : 0;
-            document.getElementById('viopBal').textContent = formatNumber(viopBal) + ' TL';
-            document.getElementById('viopUsed').textContent = formatNumber(viopUsed) + ' TL';
-            document.getElementById('viopBar').style.width = Math.min(viopPct, 100) + '%';
-            
-            const spotUsed = data.spot_used || 0;
-            const spotBal = data.spot_bal || 0;
-            const spotTotal = spotUsed + spotBal;
-            const spotPct = spotTotal > 0 ? (spotUsed / spotTotal) * 100 : 0;
-            document.getElementById('spotBal').textContent = formatNumber(spotBal) + ' TL';
-            document.getElementById('spotUsed').textContent = formatNumber(spotUsed) + ' TL';
-            document.getElementById('spotBar').style.width = Math.min(spotPct, 100) + '%';
-            
-            // Positions table
-            const snTbody = document.getElementById('snPositions');
-            const snData = data.positions || {};
-            const snKeys = Object.keys(snData);
-            
-            if (snKeys.length === 0) {
-                snTbody.innerHTML = '<tr><td colspan="6" class="no-data">Açık pozisyon yok</td></tr>';
-            } else {
-                let html = '';
-                snKeys.forEach(sym => {
-                    const p = snData[sym];
-                    const pnl = p.pnl || 0;
-                    const exp = p.exp || 0;
-                    const pnlClass = pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
-                    const expClass = exp >= 0 ? 'pnl-positive' : 'pnl-negative';
-                    html += `<tr>
-                        <td><strong>${sym}</strong></td>
-                        <td>${p.sq || '-'}</td>
-                        <td>${p.nq || '-'}</td>
-                        <td class="${pnlClass}">${formatPnl(pnl)}</td>
-                        <td class="${expClass}">${formatPnl(exp)}</td>
-                        <td>${p.d || '-'}</td>
-                    </tr>`;
-                });
-                snTbody.innerHTML = html;
-            }
-            
-            // Timestamps
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleString('tr-TR');
-            document.getElementById('robotTime').textContent = data.ts || '-';
+        function getPnlClass(val) {
+            const num = parseFloat(val);
+            if (num > 0) return 'positive';
+            if (num < 0) return 'negative';
+            return 'neutral';
         }
         
         async function fetchData() {
             try {
-                const url = GIST_RAW_URL + '?t=' + Date.now();
+                const url = USE_GIST ? GIST_URL + '?t=' + Date.now() : LOCAL_URL;
                 const response = await fetch(url);
-                if (!response.ok) throw new Error('HTTP ' + response.status);
+                if (!response.ok) throw new Error('Veri alınamadı');
                 const data = await response.json();
-                updateDashboard(data);
-            } catch (err) {
-                console.error('Veri alınamadı:', err);
-                document.getElementById('marketText').textContent = 'Bağlantı Hatası';
-                document.getElementById('marketStatus').className = 'status-indicator offline';
+                updateUI(data);
+            } catch (error) {
+                console.error('Hata:', error);
             }
         }
         
+        function updateUI(data) {
+            // Durum badge'leri
+            const marketBadge = document.getElementById('badge-market');
+            marketBadge.textContent = data.market ? 'Piyasa Açık' : 'Piyasa Kapalı';
+            marketBadge.className = 'badge badge-market' + (data.market ? '' : ' closed');
+            
+            const brokerBadge = document.getElementById('badge-broker');
+            brokerBadge.textContent = data.broker ? 'Broker ✓' : 'Broker ✗';
+            brokerBadge.className = 'badge badge-broker' + (data.broker ? '' : ' disconnected');
+            
+            document.getElementById('badge-test').style.display = data.test ? 'inline' : 'none';
+            
+            // Pending badge ve alert
+            const pendingCount = data.pending_count || 0;
+            const pendingBadge = document.getElementById('badge-pending');
+            const pendingAlert = document.getElementById('pending-alert');
+            const pendingSection = document.getElementById('pending-section');
+            
+            if (pendingCount > 0) {
+                pendingBadge.style.display = 'inline';
+                pendingBadge.textContent = '⏳ ' + pendingCount + ' Bekleyen';
+                pendingAlert.classList.remove('hidden');
+                document.getElementById('pending-count').textContent = pendingCount;
+                pendingSection.style.display = 'block';
+                document.getElementById('pending-table-count').textContent = pendingCount;
+                
+                // Pending tablosu
+                const pendingTbody = document.getElementById('pending-tbody');
+                pendingTbody.innerHTML = '';
+                
+                if (data.pending) {
+                    for (const [key, p] of Object.entries(data.pending)) {
+                        const parts = key.split('_');
+                        const sym = parts[0].replace('VIP\'F_', '').replace('IMKBH\'', '');
+                        const row = document.createElement('tr');
+                        const fillPct = p.qty > 0 ? ((p.processed / p.qty) * 100).toFixed(0) : 0;
+                        row.innerHTML = `
+                            <td><strong>${sym}</strong></td>
+                            <td>${p.side}</td>
+                            <td>${p.qty}</td>
+                            <td>${p.price.toFixed(2)} ₺</td>
+                            <td>${p.processed}/${p.qty} (${fillPct}%)</td>
+                            <td>${p.wait} dk</td>
+                        `;
+                        pendingTbody.appendChild(row);
+                    }
+                }
+            } else {
+                pendingBadge.style.display = 'none';
+                pendingAlert.classList.add('hidden');
+                pendingSection.style.display = 'none';
+            }
+            
+            // Kartlar
+            const dailyPnl = document.getElementById('daily-pnl');
+            dailyPnl.textContent = formatMoney(data.daily_pnl);
+            dailyPnl.className = 'card-value ' + getPnlClass(data.daily_pnl);
+            document.getElementById('daily-trades').textContent = (data.trades || 0) + ' işlem';
+            
+            const totalPnl = document.getElementById('total-pnl');
+            totalPnl.textContent = formatMoney(data.total_pnl);
+            totalPnl.className = 'card-value ' + getPnlClass(data.total_pnl);
+            document.getElementById('pos-count').textContent = (data.count || 0) + ' pozisyon';
+            
+            document.getElementById('viop-bal').textContent = formatMoney(data.viop_bal);
+            document.getElementById('viop-used').textContent = 'Kullanılan: ' + formatMoney(data.viop_used);
+            
+            document.getElementById('spot-bal').textContent = formatMoney(data.spot_bal);
+            document.getElementById('spot-used').textContent = 'Kullanılan: ' + formatMoney(data.spot_used);
+            
+            // Period stats
+            if (data.week) {
+                const weekEl = document.getElementById('week-pnl');
+                weekEl.textContent = formatMoney(data.week.pnl);
+                weekEl.className = 'stat-value ' + getPnlClass(data.week.pnl);
+                document.getElementById('week-sub').textContent = 
+                    data.week.trades + ' işlem / ' + data.week.days + ' gün';
+            }
+            
+            if (data.month) {
+                const monthEl = document.getElementById('month-pnl');
+                monthEl.textContent = formatMoney(data.month.pnl);
+                monthEl.className = 'stat-value ' + getPnlClass(data.month.pnl);
+                document.getElementById('month-sub').textContent = 
+                    data.month.trades + ' işlem / ' + data.month.days + ' gün';
+            }
+            
+            if (data.all) {
+                const allEl = document.getElementById('all-pnl');
+                allEl.textContent = formatMoney(data.all.pnl);
+                allEl.className = 'stat-value ' + getPnlClass(data.all.pnl);
+                document.getElementById('all-sub').textContent = 
+                    data.all.trades + ' işlem / ' + data.all.days + ' gün';
+            }
+            
+            // Pozisyonlar tablosu
+            const posTbody = document.getElementById('positions-tbody');
+            posTbody.innerHTML = '';
+            
+            if (data.positions && Object.keys(data.positions).length > 0) {
+                document.getElementById('positions-count').textContent = Object.keys(data.positions).length;
+                
+                for (const [sym, pos] of Object.entries(data.positions)) {
+                    const row = document.createElement('tr');
+                    // positions formatı: sym -> {pnl, spread, qty, entry, ...} veya array
+                    let spotQty, nearQty, spread, expPnl, addCount;
+                    
+                    if (Array.isArray(pos)) {
+                        [spotQty, nearQty, , , spread, expPnl, addCount] = pos;
+                    } else {
+                        spotQty = pos.spotQty || pos.qty || '-';
+                        nearQty = pos.nearQty || '-';
+                        spread = pos.spread || pos.entrySpread || 0;
+                        expPnl = pos.expectedPnl || pos.pnl || 0;
+                        addCount = pos.addCount || 0;
+                    }
+                    
+                    const pnlClass = getPnlClass(expPnl);
+                    row.innerHTML = `
+                        <td><strong>${sym}</strong></td>
+                        <td>${spotQty}</td>
+                        <td>${nearQty}</td>
+                        <td>${formatPercent(spread)}</td>
+                        <td class="${pnlClass}">${formatMoney(expPnl)}</td>
+                        <td>${addCount || 0}/2</td>
+                    `;
+                    posTbody.appendChild(row);
+                }
+            } else {
+                document.getElementById('positions-count').textContent = '0';
+                posTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#6b7280">Açık pozisyon yok</td></tr>';
+            }
+            
+            // Footer
+            document.getElementById('update-time').textContent = data.ts || new Date().toLocaleTimeString('tr-TR');
+            document.getElementById('total-comm').textContent = (data.total_comm || 0).toFixed(2);
+            document.getElementById('risk-free').textContent = ((data.risk_free || 0) * 100).toFixed(2) + '%';
+        }
+        
+        // İlk yükleme ve periyodik güncelleme
         fetchData();
-        setInterval(fetchData, 30000);
+        setInterval(fetchData, 10000);  // 10 saniyede bir güncelle
     </script>
 </body>
 </html>
