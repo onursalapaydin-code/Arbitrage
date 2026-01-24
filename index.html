@@ -6,23 +6,12 @@
     <title>Arbitraj Dashboard v14</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #e4e4e4; 
-            min-height: 100vh;
-            padding: 20px;
-        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e4; min-height: 100vh; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; }
-        .header { 
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; padding: 15px 20px;
-            background: rgba(255,255,255,0.05); border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px 20px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; gap: 10px; }
         .header h1 { font-size: 1.5rem; font-weight: 600; }
-        .header-right { display: flex; align-items: center; gap: 15px; }
-        .status-badges { display: flex; gap: 10px; }
+        .header-right { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .status-badges { display: flex; gap: 10px; flex-wrap: wrap; }
         .badge { padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
         .badge-market { background: #10b981; color: #000; }
         .badge-market.closed { background: #ef4444; color: #fff; }
@@ -32,12 +21,9 @@
         .badge-pending { background: #f59e0b; color: #000; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .nav-links { display: flex; gap: 10px; }
-        .nav-link {
-            padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 6px;
-            color: #9ca3af; text-decoration: none; font-size: 0.85rem; transition: all 0.2s;
-        }
+        .nav-link { padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 6px; color: #9ca3af; text-decoration: none; font-size: 0.85rem; transition: all 0.2s; }
         .nav-link:hover, .nav-link.active { background: rgba(59, 130, 246, 0.3); color: #fff; }
-        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 20px; }
         .card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
         .card-title { font-size: 0.85rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
         .card-value { font-size: 1.8rem; font-weight: 700; }
@@ -55,23 +41,19 @@
         tr:hover { background: rgba(255,255,255,0.03); }
         .pending-alert { background: linear-gradient(135deg, #f59e0b22 0%, #f5720b22 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
         .pending-alert.hidden { display: none; }
-        .pending-icon { font-size: 1.5rem; }
-        .pending-text { flex: 1; }
-        .pending-text strong { color: #f59e0b; }
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
         .stat-card { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 15px; text-align: center; }
         .stat-label { font-size: 0.8rem; color: #6b7280; margin-bottom: 5px; }
         .stat-value { font-size: 1.3rem; font-weight: 600; }
         .stat-sub { font-size: 0.75rem; color: #4b5563; margin-top: 3px; }
         .log-section { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         .log-title { font-size: 1.1rem; font-weight: 600; }
         .log-actions { display: flex; gap: 10px; }
         .log-btn { padding: 6px 12px; background: rgba(255,255,255,0.1); border: none; border-radius: 6px; color: #9ca3af; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
         .log-btn:hover { background: rgba(59, 130, 246, 0.3); color: #fff; }
-        .log-content { background: #0d1117; border-radius: 8px; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.8rem; line-height: 1.5; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+        .log-content { background: #0d1117; border-radius: 8px; padding: 15px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.75rem; line-height: 1.4; max-height: 500px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
         .log-line { padding: 2px 0; }
-        .log-line:hover { background: rgba(255,255,255,0.05); }
         .log-time { color: #6b7280; }
         .log-error { color: #ef4444; }
         .log-success { color: #10b981; }
@@ -80,8 +62,7 @@
         .footer { text-align: center; color: #4b5563; font-size: 0.85rem; margin-top: 20px; }
         .page { display: none; }
         .page.active { display: block; }
-        /* Settings Page */
-        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .settings-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
         .settings-card-title { font-size: 1rem; font-weight: 600; margin-bottom: 15px; color: #3b82f6; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
@@ -90,6 +71,11 @@
         .setting-value { color: #e4e4e4; font-weight: 500; font-family: 'Consolas', monospace; }
         .setting-value.highlight { color: #10b981; }
         .setting-value.warning { color: #f59e0b; }
+        .gist-config { background: rgba(59,130,246,0.1); border: 1px solid #3b82f6; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .gist-config input { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 8px 12px; color: #fff; width: 100%; margin-top: 5px; font-family: monospace; }
+        .gist-config button { margin-top: 10px; padding: 8px 16px; background: #3b82f6; border: none; border-radius: 4px; color: #fff; cursor: pointer; }
+        .gist-config button:hover { background: #2563eb; }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .cards { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -103,25 +89,31 @@
                     <a href="#" class="nav-link" data-page="settings">⚙️ Ayarlar</a>
                 </div>
                 <div class="status-badges">
-                    <span id="badge-market" class="badge badge-market">Piyasa Açık</span>
-                    <span id="badge-broker" class="badge badge-broker">Broker ✓</span>
+                    <span id="badge-market" class="badge badge-market">-</span>
+                    <span id="badge-broker" class="badge badge-broker">-</span>
                     <span id="badge-test" class="badge badge-test" style="display:none">TEST</span>
-                    <span id="badge-pending" class="badge badge-pending" style="display:none">⏳ Bekleyen</span>
+                    <span id="badge-pending" class="badge badge-pending" style="display:none">⏳</span>
                 </div>
             </div>
         </div>
         
         <!-- Ana Sayfa -->
         <div id="page-main" class="page active">
+            <div class="gist-config" id="gist-config">
+                <strong>🔗 Gist Yapılandırması</strong><br>
+                <small>Gist ID'nizi girin (URL'deki son kısım):</small>
+                <input type="text" id="gist-id-input" placeholder="örn: abc123def456...">
+                <button onclick="saveGistId()">Kaydet ve Yükle</button>
+            </div>
             <div id="pending-alert" class="pending-alert hidden">
-                <span class="pending-icon">⚠️</span>
-                <div class="pending-text"><strong id="pending-count">0</strong> bekleyen emir var.</div>
+                <span>⚠️</span>
+                <div><strong id="pending-count">0</strong> bekleyen emir var.</div>
             </div>
             <div class="cards">
-                <div class="card"><div class="card-title">Günlük P&L</div><div id="daily-pnl" class="card-value">-</div><div id="daily-trades" class="card-sub">- işlem</div></div>
-                <div class="card"><div class="card-title">Açık Pozisyon P&L</div><div id="total-pnl" class="card-value">-</div><div id="pos-count" class="card-sub">- pozisyon</div></div>
-                <div class="card"><div class="card-title">VIOP Bakiye</div><div id="viop-bal" class="card-value">-</div><div id="viop-used" class="card-sub">Kullanılan: -</div></div>
-                <div class="card"><div class="card-title">SPOT Bakiye</div><div id="spot-bal" class="card-value">-</div><div id="spot-used" class="card-sub">Kullanılan: -</div></div>
+                <div class="card"><div class="card-title">Günlük P&L</div><div id="daily-pnl" class="card-value">-</div><div id="daily-trades" class="card-sub">-</div></div>
+                <div class="card"><div class="card-title">Açık Poz P&L</div><div id="total-pnl" class="card-value">-</div><div id="pos-count" class="card-sub">-</div></div>
+                <div class="card"><div class="card-title">VIOP Bakiye</div><div id="viop-bal" class="card-value">-</div><div id="viop-used" class="card-sub">-</div></div>
+                <div class="card"><div class="card-title">SPOT Bakiye</div><div id="spot-bal" class="card-value">-</div><div id="spot-used" class="card-sub">-</div></div>
             </div>
             <div class="stats-grid">
                 <div class="stat-card"><div class="stat-label">Haftalık</div><div id="week-pnl" class="stat-value">-</div><div id="week-sub" class="stat-sub">-</div></div>
@@ -145,11 +137,10 @@
                     <div class="log-title">📋 Robot Logları (Son 50 Satır)</div>
                     <div class="log-actions">
                         <button class="log-btn" onclick="refreshLogs()">🔄 Yenile</button>
-                        <button class="log-btn" onclick="toggleAutoRefresh()"><span id="auto-refresh-status">▶️ Otomatik</span></button>
                         <button class="log-btn" onclick="scrollToBottom()">⬇️ Sona Git</button>
                     </div>
                 </div>
-                <div id="log-content" class="log-content">Log yükleniyor...</div>
+                <div id="log-content" class="log-content">Gist ID girilmedi...</div>
             </div>
         </div>
         
@@ -163,7 +154,7 @@
                     <div class="setting-row"><span class="setting-label">Test Modu</span><span id="set-test-mode" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
-                    <div class="settings-card-title">📊 Strateji Parametreleri</div>
+                    <div class="settings-card-title">📊 Strateji</div>
                     <div class="setting-row"><span class="setting-label">SN BB Giriş</span><span id="set-sn-bb" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">SN Min Marj</span><span id="set-sn-min" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Roll Min Marj</span><span id="set-roll-min" class="setting-value">-</span></div>
@@ -174,7 +165,6 @@
                     <div class="setting-row"><span class="setting-label">Max Günlük Zarar</span><span id="set-max-loss" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Max Norm ATR</span><span id="set-max-atr" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Max Spot ATR %</span><span id="set-max-spot-atr" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Risk-Free Oran</span><span id="set-risk-free" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
                     <div class="settings-card-title">🎯 Kar Alma</div>
@@ -182,18 +172,6 @@
                     <div class="setting-row"><span class="setting-label">Çift Kar %</span><span id="set-double-profit" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">BB Periyodu</span><span id="set-bb-period" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Döngü (ms)</span><span id="set-loop-ms" class="setting-value">-</span></div>
-                </div>
-                <div class="settings-card">
-                    <div class="settings-card-title">🔗 Gist Ayarları</div>
-                    <div class="setting-row"><span class="setting-label">Gist ID</span><span id="set-gist-id" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Gist Token</span><span id="set-gist-token" class="setting-value">-</span></div>
-                </div>
-                <div class="settings-card">
-                    <div class="settings-card-title">📁 Dosya Yolları</div>
-                    <div class="setting-row"><span class="setting-label">Ana Klasör</span><span class="setting-value">D:\arbit\</span></div>
-                    <div class="setting-row"><span class="setting-label">Log Klasör</span><span class="setting-value">D:\arbit\logs\</span></div>
-                    <div class="setting-row"><span class="setting-label">Ayarlar</span><span class="setting-value">settings.json</span></div>
-                    <div class="setting-row"><span class="setting-label">Pozisyonlar</span><span class="setting-value">positions.json</span></div>
                 </div>
             </div>
         </div>
@@ -206,9 +184,27 @@
     </div>
     
     <script>
-        const STATS_URL = 'stats.json';
-        const SETTINGS_URL = 'settings.json';
-        let autoRefreshLogs = false, logRefreshInterval = null;
+        let GIST_ID = localStorage.getItem('arbGistId') || '';
+        
+        function getGistUrl(file) {
+            return `https://gist.githubusercontent.com/raw/${GIST_ID}/${file}?t=${Date.now()}`;
+        }
+        
+        function saveGistId() {
+            GIST_ID = document.getElementById('gist-id-input').value.trim();
+            if (GIST_ID) {
+                localStorage.setItem('arbGistId', GIST_ID);
+                document.getElementById('gist-config').style.display = 'none';
+                fetchData();
+                refreshLogs();
+                loadSettings();
+            }
+        }
+        
+        if (GIST_ID) {
+            document.getElementById('gist-id-input').value = GIST_ID;
+            document.getElementById('gist-config').style.display = 'none';
+        }
         
         function formatMoney(val) {
             if (val === undefined || val === null) return '-';
@@ -245,8 +241,9 @@
         });
         
         async function fetchData() {
+            if (!GIST_ID) return;
             try {
-                const r = await fetch(STATS_URL+'?t='+Date.now());
+                const r = await fetch(getGistUrl('arb_stats.json'));
                 if (!r.ok) return;
                 const d = await r.json();
                 
@@ -258,7 +255,7 @@
                 
                 const pc = d.pending_count||0;
                 document.getElementById('badge-pending').style.display = pc>0?'inline':'none';
-                document.getElementById('badge-pending').textContent = '⏳ '+pc+' Bekleyen';
+                document.getElementById('badge-pending').textContent = '⏳ '+pc;
                 document.getElementById('pending-alert').classList.toggle('hidden', pc===0);
                 document.getElementById('pending-count').textContent = pc;
                 document.getElementById('pending-section').style.display = pc>0?'block':'none';
@@ -267,9 +264,9 @@
                 if (d.pending && pc>0) {
                     const tb = document.getElementById('pending-tbody'); tb.innerHTML='';
                     for (const [k,p] of Object.entries(d.pending)) {
-                        const sym = k.split('_')[0].replace("VIP'F_",'').replace("IMKBH'",'');
+                        const sym = k.split('_')[0];
                         const pct = p.qty>0?((p.processed/p.qty)*100).toFixed(0):0;
-                        tb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td>'+p.side+'</td><td>'+p.qty+'</td><td>'+p.price.toFixed(2)+' ₺</td><td>'+p.processed+'/'+p.qty+' ('+pct+'%)</td><td>'+p.wait+' dk</td></tr>';
+                        tb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td>'+p.side+'</td><td>'+p.qty+'</td><td>'+(p.price||0).toFixed(2)+' ₺</td><td>'+p.processed+'/'+p.qty+' ('+pct+'%)</td><td>'+(p.wait||0)+' dk</td></tr>';
                     }
                 }
                 
@@ -308,20 +305,21 @@
         }
         
         async function refreshLogs() {
+            if (!GIST_ID) { document.getElementById('log-content').innerHTML='Gist ID girilmedi...'; return; }
             try {
-                const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
-                const r = await fetch('logs/arb_'+today+'.log?t='+Date.now());
-                if (!r.ok) { document.getElementById('log-content').innerHTML='<div class="log-line" style="color:#6b7280">Log dosyası bulunamadı.</div>'; return; }
+                const r = await fetch(getGistUrl('arb_logs.txt'));
+                if (!r.ok) { document.getElementById('log-content').innerHTML='<div style="color:#6b7280">Log dosyası bulunamadı.</div>'; return; }
                 const t = await r.text();
-                const lines = t.trim().split('\n').slice(-50);
+                const lines = t.split('\n').filter(l=>l.trim());
                 document.getElementById('log-content').innerHTML = lines.map(formatLogLine).join('');
-            } catch(e) { document.getElementById('log-content').innerHTML='<div class="log-line log-error">Hata: '+e.message+'</div>'; }
+            } catch(e) { document.getElementById('log-content').innerHTML='<div class="log-error">Hata: '+e.message+'</div>'; }
         }
         
         async function loadSettings() {
+            if (!GIST_ID) return;
             try {
-                const r = await fetch(SETTINGS_URL+'?t='+Date.now());
-                if (!r.ok) { return; }
+                const r = await fetch(getGistUrl('arb_settings.json'));
+                if (!r.ok) return;
                 const s = await r.json();
                 
                 document.getElementById('set-viop-budget').textContent = formatMoney(s.viop_budget);
@@ -337,27 +335,18 @@
                 document.getElementById('set-max-loss').textContent = formatMoney(s.max_daily_loss);
                 document.getElementById('set-max-atr').textContent = s.max_norm_atr || '-';
                 document.getElementById('set-max-spot-atr').textContent = s.max_spot_atr_pct ? s.max_spot_atr_pct + '%' : '-';
-                document.getElementById('set-risk-free').textContent = s.risk_free ? (s.risk_free * 100).toFixed(2) + '%' : '-';
                 
                 document.getElementById('set-early-profit').textContent = s.early_profit_pct ? (s.early_profit_pct * 100).toFixed(0) + '%' : '-';
                 document.getElementById('set-double-profit').textContent = s.double_profit_pct ? (s.double_profit_pct * 100).toFixed(0) + '%' : '-';
                 document.getElementById('set-bb-period').textContent = s.bb_period || '-';
                 document.getElementById('set-loop-ms').textContent = s.loop_ms ? s.loop_ms + ' ms' : '-';
-                
-                document.getElementById('set-gist-id').textContent = s.gist_id ? s.gist_id.substring(0,8) + '...' : 'Ayarlanmamış';
-                document.getElementById('set-gist-token').textContent = s.gist_token ? '***' + s.gist_token.slice(-4) : 'Ayarlanmamış';
-            } catch(e) { console.error('Settings yüklenemedi:', e); }
+            } catch(e) { console.error('Settings:', e); }
         }
         
-        function toggleAutoRefresh() {
-            autoRefreshLogs = !autoRefreshLogs;
-            document.getElementById('auto-refresh-status').textContent = autoRefreshLogs?'⏸️ Durdur':'▶️ Otomatik';
-            if (autoRefreshLogs) logRefreshInterval = setInterval(refreshLogs, 5000);
-            else if (logRefreshInterval) { clearInterval(logRefreshInterval); logRefreshInterval=null; }
-        }
         function scrollToBottom() { const el=document.getElementById('log-content'); el.scrollTop=el.scrollHeight; }
         
-        fetchData(); setInterval(fetchData, 10000);
+        if (GIST_ID) { fetchData(); }
+        setInterval(fetchData, 30000);  // 30 saniyede bir
     </script>
 </body>
 </html>
