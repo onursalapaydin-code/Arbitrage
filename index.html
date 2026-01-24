@@ -95,6 +95,7 @@
                     <span id="badge-broker" class="badge badge-broker">-</span>
                     <span id="badge-test" class="badge badge-test" style="display:none">TEST</span>
                     <span id="badge-pending" class="badge badge-pending" style="display:none">⏳</span>
+                    <button id="stop-btn" class="badge" style="background:#ef4444;color:#fff;border:none;cursor:pointer;font-weight:600;" onclick="sendStopCommand()">⏹ STOP</button>
                 </div>
             </div>
         </div>
@@ -103,8 +104,10 @@
         <div id="page-setup" class="page">
             <div class="setup-box">
                 <h2>🔗 Gist Bağlantısı</h2>
-                <p>Gist ID'nizi girin (sadece ID, URL değil)</p>
+                <p>Gist ID'nizi girin</p>
                 <input type="text" id="gist-id-input" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                <p style="margin-top:15px;font-size:0.85rem;">Token (STOP butonu için, opsiyonel)</p>
+                <input type="password" id="gist-token-input" placeholder="github_pat_... veya ghp_...">
                 <button onclick="saveGistId()">Bağlan</button>
             </div>
         </div>
@@ -182,6 +185,7 @@
                 <div class="settings-card">
                     <div class="settings-card-title">🔗 Bağlantı</div>
                     <div class="setting-row"><span class="setting-label">Durum</span><span id="set-gist-status" class="setting-value highlight">Bağlı</span></div>
+                    <div class="setting-row"><span class="setting-label">STOP Butonu</span><span id="set-token-status" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Son Güncelleme</span><span id="set-last-update" class="setting-value">-</span></div>
                     <div class="setting-row">
                         <span class="setting-label">Bağlantıyı Sıfırla</span>
@@ -202,8 +206,9 @@
         // Hardcoded Gist kullanıcısı
         const GIST_USER = 'onursalapaydin-code';
         
-        // Gist ID localStorage'dan
+        // Gist ID ve Token localStorage'dan
         let GIST_ID = localStorage.getItem('arbGistId') || '';
+        let GIST_TOKEN = localStorage.getItem('arbGistToken') || '';
         let lastUpdateTime = null;
         
         function getGistUrl(file) {
@@ -211,10 +216,14 @@
         }
         
         function saveGistId() {
-            const input = document.getElementById('gist-id-input').value.trim();
-            if (input && input.length > 10) {
-                GIST_ID = input;
+            const idInput = document.getElementById('gist-id-input').value.trim();
+            const tokenInput = document.getElementById('gist-token-input')?.value.trim() || '';
+            
+            if (idInput && idInput.length > 10) {
+                GIST_ID = idInput;
+                GIST_TOKEN = tokenInput;
                 localStorage.setItem('arbGistId', GIST_ID);
+                if (GIST_TOKEN) localStorage.setItem('arbGistToken', GIST_TOKEN);
                 showPage('main');
                 fetchData();
             } else {
@@ -222,9 +231,51 @@
             }
         }
         
+        async function sendStopCommand() {
+            if (!GIST_ID || !GIST_TOKEN) {
+                alert('STOP komutu göndermek için Ayarlar > Bağlantı bölümünden token girmeniz gerekiyor.');
+                return;
+            }
+            
+            if (!confirm('Robotu durdurmak istediğinizden emin misiniz?')) return;
+            
+            try {
+                const authPrefix = GIST_TOKEN.startsWith('github_pat_') ? 'Bearer ' : 'token ';
+                const body = JSON.stringify({
+                    files: {
+                        'arb_command.json': {
+                            content: JSON.stringify({command: 'STOP', ts: new Date().toLocaleTimeString('tr-TR')})
+                        }
+                    }
+                });
+                
+                const resp = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': authPrefix + GIST_TOKEN,
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'ArbDashboard'
+                    },
+                    body: body
+                });
+                
+                if (resp.ok) {
+                    alert('STOP komutu gönderildi! Robot 30 saniye içinde duracak.');
+                    document.getElementById('stop-btn').textContent = '⏹ Gönderildi';
+                    document.getElementById('stop-btn').style.background = '#6b7280';
+                } else {
+                    alert('Hata: ' + resp.status + ' - Token geçersiz olabilir.');
+                }
+            } catch(e) {
+                alert('Hata: ' + e.message);
+            }
+        }
+        
         function resetConnection() {
             localStorage.removeItem('arbGistId');
+            localStorage.removeItem('arbGistToken');
             GIST_ID = '';
+            GIST_TOKEN = '';
             showPage('setup');
         }
         
@@ -354,6 +405,8 @@
         async function loadSettings() {
             if (!GIST_ID) return;
             document.getElementById('set-last-update').textContent = lastUpdateTime || '-';
+            document.getElementById('set-token-status').textContent = GIST_TOKEN ? 'Aktif ✓' : 'Token yok';
+            document.getElementById('set-token-status').className = 'setting-value ' + (GIST_TOKEN ? 'highlight' : 'warning');
             try {
                 const r = await fetch(getGistUrl('arb_settings.json'));
                 if (!r.ok) return;
