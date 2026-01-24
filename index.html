@@ -101,8 +101,8 @@
         <div id="page-main" class="page active">
             <div class="gist-config" id="gist-config">
                 <strong>🔗 Gist Yapılandırması</strong><br>
-                <small>Gist ID'nizi girin (URL'deki son kısım):</small>
-                <input type="text" id="gist-id-input" placeholder="örn: abc123def456...">
+                <small>Gist URL'sini yapıştırın:</small>
+                <input type="text" id="gist-id-input" placeholder="https://gist.github.com/username/gist_id">
                 <button onclick="saveGistId()">Kaydet ve Yükle</button>
             </div>
             <div id="pending-alert" class="pending-alert hidden">
@@ -185,15 +185,32 @@
     
     <script>
         let GIST_ID = localStorage.getItem('arbGistId') || '';
+        let GIST_USER = localStorage.getItem('arbGistUser') || '';
         
         function getGistUrl(file) {
-            return `https://gist.githubusercontent.com/raw/${GIST_ID}/${file}?t=${Date.now()}`;
+            return `https://gist.githubusercontent.com/${GIST_USER}/${GIST_ID}/raw/${file}?t=${Date.now()}`;
         }
         
         function saveGistId() {
-            GIST_ID = document.getElementById('gist-id-input').value.trim();
-            if (GIST_ID) {
+            const input = document.getElementById('gist-id-input').value.trim();
+            // URL veya sadece ID olabilir
+            if (input.includes('github.com')) {
+                // URL'den parse et: https://gist.github.com/USERNAME/GIST_ID
+                const parts = input.split('/');
+                GIST_USER = parts[parts.length - 2];
+                GIST_ID = parts[parts.length - 1].split('#')[0];
+            } else if (input.includes('/')) {
+                // USERNAME/GIST_ID formatı
+                const parts = input.split('/');
+                GIST_USER = parts[0];
+                GIST_ID = parts[1];
+            } else {
+                alert('Lütfen tam Gist URL\'sini yapıştırın');
+                return;
+            }
+            if (GIST_ID && GIST_USER) {
                 localStorage.setItem('arbGistId', GIST_ID);
+                localStorage.setItem('arbGistUser', GIST_USER);
                 document.getElementById('gist-config').style.display = 'none';
                 fetchData();
                 refreshLogs();
@@ -201,8 +218,8 @@
             }
         }
         
-        if (GIST_ID) {
-            document.getElementById('gist-id-input').value = GIST_ID;
+        if (GIST_ID && GIST_USER) {
+            document.getElementById('gist-id-input').value = `${GIST_USER}/${GIST_ID}`;
             document.getElementById('gist-config').style.display = 'none';
         }
         
