@@ -187,7 +187,7 @@
                 <div class="settings-card">
                     <div class="settings-card-title">🔗 Bağlantı</div>
                     <div class="setting-row"><span class="setting-label">Durum</span><span id="set-gist-status" class="setting-value highlight">Bağlı</span></div>
-                    <div class="setting-row"><span class="setting-label">STOP Butonu</span><span id="set-token-status" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Token</span><span id="set-token-status" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Son Güncelleme</span><span id="set-last-update" class="setting-value">-</span></div>
                     <div class="setting-row">
                         <span class="setting-label">Bağlantıyı Sıfırla</span>
@@ -498,7 +498,7 @@
                 const r = await fetch(getGistUrl('arb_logs.txt'));
                 if (!r.ok) { document.getElementById('log-content').innerHTML='<div style="color:#6b7280">Log dosyası bulunamadı.</div>'; return; }
                 const t = await r.text();
-                const lines = t.split('\n').filter(l=>l.trim());
+                const lines = t.split('\n').filter(l=>l.trim()).reverse();  // Yeniden eskiye sırala
                 document.getElementById('log-content').innerHTML = lines.map(formatLogLine).join('');
             } catch(e) { document.getElementById('log-content').innerHTML='<div class="log-error">Hata: '+e.message+'</div>'; }
         }
@@ -506,7 +506,7 @@
         async function loadSettings() {
             if (!GIST_ID) return;
             document.getElementById('set-last-update').textContent = lastUpdateTime || '-';
-            document.getElementById('set-token-status').textContent = GIST_TOKEN ? 'Aktif ✓' : 'Token yok';
+            document.getElementById('set-token-status').textContent = GIST_TOKEN ? 'Var ✓' : 'Yok';
             document.getElementById('set-token-status').className = 'setting-value ' + (GIST_TOKEN ? 'highlight' : 'warning');
             try {
                 const r = await fetch(getGistUrl('arb_settings.json'));
