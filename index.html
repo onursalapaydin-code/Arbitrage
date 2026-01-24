@@ -71,13 +71,12 @@
         .setting-value { color: #e4e4e4; font-weight: 500; font-family: 'Consolas', monospace; }
         .setting-value.highlight { color: #10b981; }
         .setting-value.warning { color: #f59e0b; }
-        .setup-box { background: rgba(59,130,246,0.1); border: 1px solid #3b82f6; border-radius: 12px; padding: 30px; text-align: center; margin: 50px auto; max-width: 500px; }
+        .setup-box { background: rgba(59,130,246,0.1); border: 1px solid #3b82f6; border-radius: 12px; padding: 30px; text-align: center; margin: 50px auto; max-width: 400px; }
         .setup-box h2 { margin-bottom: 15px; color: #3b82f6; }
-        .setup-box p { margin-bottom: 20px; color: #9ca3af; }
-        .setup-box input { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 12px 15px; color: #fff; width: 100%; margin-bottom: 15px; font-family: monospace; font-size: 0.9rem; }
+        .setup-box p { margin-bottom: 20px; color: #9ca3af; font-size: 0.9rem; }
+        .setup-box input { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 12px 15px; color: #fff; width: 100%; margin-bottom: 15px; font-family: monospace; font-size: 1rem; text-align: center; }
         .setup-box button { padding: 12px 30px; background: #3b82f6; border: none; border-radius: 6px; color: #fff; cursor: pointer; font-size: 1rem; font-weight: 500; }
         .setup-box button:hover { background: #2563eb; }
-        .connected-info { font-size: 0.8rem; color: #6b7280; margin-top: 15px; }
         @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .cards { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -103,13 +102,10 @@
         <!-- Setup Sayfası -->
         <div id="page-setup" class="page">
             <div class="setup-box">
-                <h2>🔗 Dashboard Bağlantısı</h2>
-                <p>Robot verilerini görüntülemek için Gist URL'nizi girin</p>
-                <input type="text" id="gist-url-input" placeholder="https://gist.github.com/username/gist_id">
-                <button onclick="saveGistConfig()">Bağlan</button>
-                <div class="connected-info">
-                    Gist URL'nizi robot ayarlarından bulabilirsiniz
-                </div>
+                <h2>🔗 Gist Bağlantısı</h2>
+                <p>Gist ID'nizi girin (sadece ID, URL değil)</p>
+                <input type="text" id="gist-id-input" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                <button onclick="saveGistId()">Bağlan</button>
             </div>
         </div>
         
@@ -185,7 +181,7 @@
                 </div>
                 <div class="settings-card">
                     <div class="settings-card-title">🔗 Bağlantı</div>
-                    <div class="setting-row"><span class="setting-label">Gist Durumu</span><span id="set-gist-status" class="setting-value highlight">Bağlı</span></div>
+                    <div class="setting-row"><span class="setting-label">Durum</span><span id="set-gist-status" class="setting-value highlight">Bağlı</span></div>
                     <div class="setting-row"><span class="setting-label">Son Güncelleme</span><span id="set-last-update" class="setting-value">-</span></div>
                     <div class="setting-row">
                         <span class="setting-label">Bağlantıyı Sıfırla</span>
@@ -203,7 +199,10 @@
     </div>
     
     <script>
-        let GIST_USER = localStorage.getItem('arbGistUser') || '';
+        // Hardcoded Gist kullanıcısı
+        const GIST_USER = 'onursalapaydin-code';
+        
+        // Gist ID localStorage'dan
         let GIST_ID = localStorage.getItem('arbGistId') || '';
         let lastUpdateTime = null;
         
@@ -211,39 +210,21 @@
             return `https://gist.githubusercontent.com/${GIST_USER}/${GIST_ID}/raw/${file}?t=${Date.now()}`;
         }
         
-        function saveGistConfig() {
-            const input = document.getElementById('gist-url-input').value.trim();
-            if (input.includes('gist.github.com')) {
-                const parts = input.replace('#', '/').split('/').filter(p => p && p !== 'file');
-                GIST_USER = parts[parts.length - 2] || parts[parts.length - 3];
-                GIST_ID = parts[parts.length - 1].split('#')[0];
-                
-                // gist.github.com/user/id formatı için
-                if (input.includes('gist.github.com')) {
-                    const match = input.match(/gist\.github\.com\/([^\/]+)\/([a-f0-9]+)/);
-                    if (match) {
-                        GIST_USER = match[1];
-                        GIST_ID = match[2];
-                    }
-                }
-            } else {
-                alert('Geçerli bir Gist URL\'si girin\nÖrnek: https://gist.github.com/username/gist_id');
-                return;
-            }
-            
-            if (GIST_ID && GIST_USER) {
+        function saveGistId() {
+            const input = document.getElementById('gist-id-input').value.trim();
+            if (input && input.length > 10) {
+                GIST_ID = input;
                 localStorage.setItem('arbGistId', GIST_ID);
-                localStorage.setItem('arbGistUser', GIST_USER);
                 showPage('main');
                 fetchData();
+            } else {
+                alert('Geçerli bir Gist ID girin');
             }
         }
         
         function resetConnection() {
             localStorage.removeItem('arbGistId');
-            localStorage.removeItem('arbGistUser');
             GIST_ID = '';
-            GIST_USER = '';
             showPage('setup');
         }
         
@@ -251,7 +232,7 @@
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             
-            if (!GIST_ID || !GIST_USER) {
+            if (!GIST_ID) {
                 document.getElementById('page-setup').classList.add('active');
                 return;
             }
@@ -289,7 +270,7 @@
         }
         
         async function fetchData() {
-            if (!GIST_ID || !GIST_USER) return;
+            if (!GIST_ID) return;
             try {
                 const r = await fetch(getGistUrl('arb_stats.json'));
                 if (!r.ok) { document.getElementById('set-gist-status').textContent = 'Bağlantı Hatası'; return; }
@@ -360,7 +341,7 @@
         }
         
         async function refreshLogs() {
-            if (!GIST_ID || !GIST_USER) return;
+            if (!GIST_ID) return;
             try {
                 const r = await fetch(getGistUrl('arb_logs.txt'));
                 if (!r.ok) { document.getElementById('log-content').innerHTML='<div style="color:#6b7280">Log dosyası bulunamadı.</div>'; return; }
@@ -371,7 +352,7 @@
         }
         
         async function loadSettings() {
-            if (!GIST_ID || !GIST_USER) return;
+            if (!GIST_ID) return;
             document.getElementById('set-last-update').textContent = lastUpdateTime || '-';
             try {
                 const r = await fetch(getGistUrl('arb_settings.json'));
@@ -402,7 +383,7 @@
         function scrollToBottom() { const el=document.getElementById('log-content'); el.scrollTop=el.scrollHeight; }
         
         // Başlangıç
-        if (GIST_ID && GIST_USER) {
+        if (GIST_ID) {
             showPage('main');
             fetchData();
         } else {
