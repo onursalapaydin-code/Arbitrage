@@ -83,7 +83,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Arbitraj Dashboard</h1>
+            <h1>📊 Arbitraj Dashboard <span id="robot-status" style="font-size:0.7em;color:#10b981;"></span></h1>
             <div class="header-right">
                 <div class="nav-links">
                     <span class="nav-link active" data-page="main">Ana Sayfa</span>
@@ -335,6 +335,32 @@
             }
         }
         
+        function updateRobotStatus(isRunning) {
+            const statusEl = document.getElementById('robot-status');
+            const pauseBtn = document.getElementById('pause-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            
+            if (isRunning) {
+                statusEl.textContent = '● Robot Çalışıyor';
+                statusEl.style.color = '#10b981';
+                pauseBtn.disabled = false;
+                pauseBtn.style.opacity = '1';
+                pauseBtn.style.cursor = 'pointer';
+                stopBtn.disabled = false;
+                stopBtn.style.opacity = '1';
+                stopBtn.style.cursor = 'pointer';
+            } else {
+                statusEl.textContent = '○ Robot Durdu';
+                statusEl.style.color = '#ef4444';
+                pauseBtn.disabled = true;
+                pauseBtn.style.opacity = '0.5';
+                pauseBtn.style.cursor = 'not-allowed';
+                stopBtn.disabled = true;
+                stopBtn.style.opacity = '0.5';
+                stopBtn.style.cursor = 'not-allowed';
+            }
+        }
+        
         function resetConnection() {
             localStorage.removeItem('arbGistId');
             localStorage.removeItem('arbGistToken');
@@ -397,6 +423,10 @@
                 document.getElementById('badge-broker').textContent = d.broker?'Broker ✓':'Broker ✗';
                 document.getElementById('badge-broker').className = 'badge badge-broker'+(d.broker?'':' disconnected');
                 document.getElementById('badge-test').style.display = d.test?'inline':'none';
+                
+                // Running durumunu kontrol et
+                const isRobotRunning = d.running !== false;  // undefined veya true ise çalışıyor
+                updateRobotStatus(isRobotRunning);
                 
                 // Paused durumunu stats.json'dan oku (form veya dashboard'dan duraklatılmış olabilir)
                 if (d.paused !== undefined) {
