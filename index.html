@@ -480,7 +480,8 @@
                 if (posKeys.length > 0) {
                     for (const [sym,pos] of Object.entries(d.positions)) {
                         let sq,nq,sp,ep,ac;
-                        if (Array.isArray(pos)) [sq,nq,,,sp,ep,ac]=pos; else {sq=pos.spotQty||'-';nq=pos.nearQty||'-';sp=pos.spread||0;ep=pos.expectedPnl||0;ac=pos.addCount||0;}
+                        if (Array.isArray(pos)) [sq,nq,,,sp,ep,ac]=pos; 
+                        else {sq=pos.sq||'-';nq=pos.nq||'-';sp=pos.sp||0;ep=pos.exp||0;ac=pos.d||0;}
                         ptb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td>'+sq+'</td><td>'+nq+'</td><td>'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'">'+formatMoney(ep)+'</td><td>'+(ac||0)+'/2</td></tr>';
                     }
                 } else ptb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#6b7280">Açık pozisyon yok</td></tr>';
