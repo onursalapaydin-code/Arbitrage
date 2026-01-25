@@ -92,6 +92,7 @@
                 </div>
                 <div class="status-badges">
                     <span id="badge-data" class="badge" style="display:none;background:#ef4444;color:#fff;">Veri ✗</span>
+                    <span id="badge-circuit" class="badge" style="display:none;background:#ef4444;color:#fff;font-weight:600;">⚡ DEVRE KESİCİ</span>
                     <span id="badge-margin" class="badge" style="display:none;font-weight:600;">Margin</span>
                     <span id="badge-market" class="badge badge-market">-</span>
                     <span id="badge-broker" class="badge badge-broker">-</span>
@@ -459,6 +460,10 @@
                         marginBadge.style.color = '#fff';
                     }
                 }
+                
+                // Devre kesici durumu
+                const circuitBadge = document.getElementById('badge-circuit');
+                circuitBadge.style.display = d.circuit ? 'inline' : 'none';
                 
                 // Running durumunu kontrol et
                 const isRobotRunning = d.running !== false;  // undefined veya true ise çalışıyor
