@@ -180,6 +180,13 @@
                     <div class="setting-row"><span class="setting-label">Max Spot ATR %</span><span id="set-max-spot-atr" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
+                    <div class="settings-card-title">💰 Margin Uyarıları</div>
+                    <div class="setting-row"><span class="setting-label">Sarı (Uyarı)</span><span id="set-margin-warn" class="setting-value" style="color:#f59e0b">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Turuncu (Tehlike)</span><span id="set-margin-danger" class="setting-value" style="color:#f97316">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Kırmızı (Kritik)</span><span id="set-margin-crit" class="setting-value" style="color:#ef4444">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Gün İçi Min Kar</span><span id="set-intraday" class="setting-value">-</span></div>
+                </div>
+                <div class="settings-card">
                     <div class="settings-card-title">🎯 Kar Alma</div>
                     <div class="setting-row"><span class="setting-label">Erken Kar %</span><span id="set-early-profit" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Çift Kar %</span><span id="set-double-profit" class="setting-value">-</span></div>
@@ -562,6 +569,12 @@
                 document.getElementById('set-max-loss').textContent = formatMoney(s.max_daily_loss);
                 document.getElementById('set-max-atr').textContent = s.max_norm_atr || '-';
                 document.getElementById('set-max-spot-atr').textContent = s.max_spot_atr_pct ? s.max_spot_atr_pct + '%' : '-';
+                
+                // Margin uyarı ayarları
+                document.getElementById('set-margin-warn').textContent = s.margin_warning_pct !== undefined ? '<' + (s.margin_warning_pct * 100).toFixed(0) + '%' : '<%10';
+                document.getElementById('set-margin-danger').textContent = s.margin_danger_pct !== undefined ? '<' + (s.margin_danger_pct * 100).toFixed(0) + '%' : '<%5';
+                document.getElementById('set-margin-crit').textContent = s.margin_critical_pct !== undefined ? (s.margin_critical_pct * 100).toFixed(0) + '%' : '%0';
+                document.getElementById('set-intraday').textContent = s.intraday_min_profit ? '‰' + (s.intraday_min_profit * 1000).toFixed(1) : '‰2';
                 
                 document.getElementById('set-early-profit').textContent = s.early_profit_pct ? (s.early_profit_pct * 100).toFixed(0) + '%' : '-';
                 document.getElementById('set-double-profit').textContent = s.double_profit_pct ? (s.double_profit_pct * 100).toFixed(0) + '%' : '-';
