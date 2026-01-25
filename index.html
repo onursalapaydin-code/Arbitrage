@@ -92,6 +92,7 @@
                 </div>
                 <div class="status-badges">
                     <span id="badge-data" class="badge" style="display:none;background:#ef4444;color:#fff;">Veri ✗</span>
+                    <span id="badge-margin" class="badge" style="display:none;font-weight:600;">Margin</span>
                     <span id="badge-market" class="badge badge-market">-</span>
                     <span id="badge-broker" class="badge badge-broker">-</span>
                     <span id="badge-test" class="badge badge-test" style="display:none">TEST</span>
@@ -430,6 +431,28 @@
                 document.getElementById('badge-broker').className = 'badge badge-broker'+(d.broker?'':' disconnected');
                 document.getElementById('badge-test').style.display = d.test?'inline':'none';
                 
+                // Margin durumu: 0=normal, 1=warning(sarı), 2=danger(turuncu), 3=critical(kırmızı)
+                const marginBadge = document.getElementById('badge-margin');
+                const marginStatus = d.margin || 0;
+                if (marginStatus === 0) {
+                    marginBadge.style.display = 'none';
+                } else {
+                    marginBadge.style.display = 'inline';
+                    if (marginStatus === 1) {
+                        marginBadge.textContent = '⚠️ Margin';
+                        marginBadge.style.background = '#f59e0b';
+                        marginBadge.style.color = '#000';
+                    } else if (marginStatus === 2) {
+                        marginBadge.textContent = '🟠 Margin!';
+                        marginBadge.style.background = '#f97316';
+                        marginBadge.style.color = '#fff';
+                    } else if (marginStatus === 3) {
+                        marginBadge.textContent = '🔴 MARGIN!';
+                        marginBadge.style.background = '#ef4444';
+                        marginBadge.style.color = '#fff';
+                    }
+                }
+                
                 // Running durumunu kontrol et
                 const isRobotRunning = d.running !== false;  // undefined veya true ise çalışıyor
                 updateRobotStatus(isRobotRunning);
@@ -466,7 +489,13 @@
                 document.getElementById('pos-count').textContent = (d.count||0)+' pozisyon';
                 
                 document.getElementById('viop-bal').textContent = formatMoney(d.viop_bal);
-                document.getElementById('viop-used').textContent = 'Kullanılan: '+formatMoney(d.viop_used);
+                const viopFree = d.viop_free || 0;
+                const viopFreePct = (viopFree * 100).toFixed(1) + '%';
+                let viopFreeColor = '#10b981';  // yeşil
+                if (viopFree < 0.05) viopFreeColor = '#ef4444';  // kırmızı
+                else if (viopFree < 0.10) viopFreeColor = '#f97316';  // turuncu
+                else if (viopFree < 0.20) viopFreeColor = '#f59e0b';  // sarı
+                document.getElementById('viop-used').innerHTML = 'Kullanılan: '+formatMoney(d.viop_used)+' <span style="color:'+viopFreeColor+';font-weight:600;">(Serbest: '+viopFreePct+')</span>';
                 document.getElementById('spot-bal').textContent = formatMoney(d.spot_bal);
                 document.getElementById('spot-used').textContent = 'Kullanılan: '+formatMoney(d.spot_used);
                 
