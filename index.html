@@ -127,7 +127,7 @@
                 <div class="card"><div class="card-title">Günlük P&L</div><div id="daily-pnl" class="card-value">-</div><div id="daily-trades" class="card-sub">-</div></div>
                 <div class="card"><div class="card-title">Açık Poz P&L</div><div id="total-pnl" class="card-value">-</div><div id="pos-count" class="card-sub">-</div></div>
                 <div class="card"><div class="card-title">VIOP Bakiye</div><div id="viop-bal" class="card-value">-</div><div id="viop-used" class="card-sub">-</div></div>
-                <div class="card"><div class="card-title">SPOT Bakiye</div><div id="spot-bal" class="card-value">-</div><div id="spot-used" class="card-sub">-</div></div>
+                <div class="card"><div class="card-title">SPOT Kullanılabilir (T+2)</div><div id="spot-bal" class="card-value">-</div><div id="spot-used" class="card-sub">-</div></div>
             </div>
             <div class="stats-grid">
                 <div class="stat-card"><div class="stat-label">Haftalık</div><div id="week-pnl" class="stat-value">-</div><div id="week-sub" class="stat-sub">-</div></div>
@@ -508,8 +508,8 @@
                 else if (viopFree < 0.10) viopFreeColor = '#f97316';  // turuncu
                 else if (viopFree < 0.20) viopFreeColor = '#f59e0b';  // sarı
                 document.getElementById('viop-used').innerHTML = 'Kullanılan: '+formatMoney(d.viop_used)+' <span style="color:'+viopFreeColor+';font-weight:600;">(Serbest: '+viopFreePct+')</span>';
-                document.getElementById('spot-bal').textContent = formatMoney(d.spot_bal);
-                document.getElementById('spot-used').textContent = 'Kullanılan: '+formatMoney(d.spot_used);
+                document.getElementById('spot-bal').textContent = formatMoney(d.t2 !== undefined ? d.t2 : d.spot_bal);
+                document.getElementById('spot-used').textContent = 'Kullanılan: '+formatMoney(d.spot_used)+' / Toplam: '+formatMoney(d.spot_bal);
                 
                 if (d.week) { const e=document.getElementById('week-pnl'); e.textContent=formatMoney(d.week.pnl); e.className='stat-value '+getPnlClass(d.week.pnl); document.getElementById('week-sub').textContent=d.week.trades+' işlem / '+d.week.days+' gün'; }
                 if (d.month) { const e=document.getElementById('month-pnl'); e.textContent=formatMoney(d.month.pnl); e.className='stat-value '+getPnlClass(d.month.pnl); document.getElementById('month-sub').textContent=d.month.trades+' işlem / '+d.month.days+' gün'; }
