@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbitraj Dashboard v16</title>
+    <title>Arbitraj Dashboard v17</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e4; min-height: 100vh; padding: 20px; }
@@ -169,16 +169,19 @@
                 </div>
                 <div class="settings-card">
                     <div class="settings-card-title">📊 Strateji</div>
-                    <div class="setting-row"><span class="setting-label">SN BB Giriş</span><span id="set-sn-bb" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">SN Min Marj</span><span id="set-sn-min" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Roll Min Marj</span><span id="set-roll-min" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Replacement Eşik</span><span id="set-replacement" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
+                    <div class="settings-card-title">🎯 BB93 Stratejisi</div>
+                    <div class="setting-row"><span class="setting-label">Durum</span><span id="set-bb93-enabled" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Başlangıç</span><span id="set-bb93-start" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Bitiş</span><span id="set-bb93-end" class="setting-value">-</span></div>
+                </div>
+                <div class="settings-card">
                     <div class="settings-card-title">⚠️ Risk Yönetimi</div>
                     <div class="setting-row"><span class="setting-label">Max Günlük Zarar</span><span id="set-max-loss" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Max Norm ATR</span><span id="set-max-atr" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Max Spot ATR %</span><span id="set-max-spot-atr" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
                     <div class="settings-card-title">💰 Margin Uyarıları</div>
@@ -566,14 +569,19 @@
                 document.getElementById('set-test-mode').textContent = s.test_mode ? 'AÇIK' : 'KAPALI';
                 document.getElementById('set-test-mode').className = 'setting-value ' + (s.test_mode ? 'warning' : 'highlight');
                 
-                document.getElementById('set-sn-bb').textContent = s.sn_bb_entry || '-';
                 document.getElementById('set-sn-min').textContent = s.sn_min_margin ? (s.sn_min_margin * 100).toFixed(2) + '%' : '-';
                 document.getElementById('set-roll-min').textContent = s.roll_min_margin ? (s.roll_min_margin * 100).toFixed(2) + '%' : '-';
                 document.getElementById('set-replacement').textContent = s.replacement_threshold ? (s.replacement_threshold * 100).toFixed(0) + '%' : '-';
                 
+                // BB93 ayarları
+                document.getElementById('set-bb93-enabled').textContent = s.bb93_enabled ? 'AKTİF' : 'KAPALI';
+                document.getElementById('set-bb93-enabled').className = 'setting-value ' + (s.bb93_enabled ? 'highlight' : 'warning');
+                const bb93Start = (s.bb93_start_hour !== undefined ? s.bb93_start_hour : 10) + ':' + String(s.bb93_start_min !== undefined ? s.bb93_start_min : 0).padStart(2,'0');
+                const bb93End = (s.bb93_end_hour !== undefined ? s.bb93_end_hour : 12) + ':' + String(s.bb93_end_min !== undefined ? s.bb93_end_min : 55).padStart(2,'0');
+                document.getElementById('set-bb93-start').textContent = bb93Start;
+                document.getElementById('set-bb93-end').textContent = bb93End;
+                
                 document.getElementById('set-max-loss').textContent = formatMoney(s.max_daily_loss);
-                document.getElementById('set-max-atr').textContent = s.max_norm_atr || '-';
-                document.getElementById('set-max-spot-atr').textContent = s.max_spot_atr_pct ? s.max_spot_atr_pct + '%' : '-';
                 
                 // Margin uyarı ayarları
                 document.getElementById('set-margin-warn').textContent = s.margin_warning_pct !== undefined ? '<' + (s.margin_warning_pct * 100).toFixed(0) + '%' : '<%10';
