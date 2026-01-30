@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SN-NF-PAIR Arbitraj Dashboard v19</title>
+    <title>SN-NF-PAIR Arbitraj Dashboard v19.1</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e4; min-height: 100vh; padding: 20px; }
@@ -210,6 +210,7 @@
                     <div class="setting-row"><span class="setting-label">Durum</span><span id="set-pair-enabled" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Bütçe</span><span id="set-pair-budget" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Kullanılan</span><span id="set-pair-used" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Kademe Dağılımı</span><span id="set-pair-alloc" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Giriş Z (1/2/3)</span><span id="set-pair-z-entry" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Çıkış Z ≤</span><span id="set-pair-z-exit" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Çiftler</span><span id="set-pair-defs" class="setting-value" style="font-size:0.8rem;word-break:break-all;">-</span></div>
@@ -750,6 +751,8 @@
                 document.getElementById('set-pair-enabled').className = 'setting-value ' + (pairEnabled ? 'highlight' : 'warning');
                 document.getElementById('set-pair-budget').textContent = s.pair_budget ? formatMoney(s.pair_budget) : '-';
                 document.getElementById('set-pair-used').textContent = s.pair_used ? formatMoney(s.pair_used) : '-';
+                const pairAlloc = (s.pair_alloc_1 || 30) + ' / ' + (s.pair_alloc_2 || 30) + ' / ' + (s.pair_alloc_3 || 40) + ' %';
+                document.getElementById('set-pair-alloc').textContent = pairAlloc;
                 const pairZEntry = (s.pair_z_entry_1 || 2.0).toFixed(1) + ' / ' + (s.pair_z_entry_2 || 2.5).toFixed(1) + ' / ' + (s.pair_z_entry_3 || 3.0).toFixed(1);
                 document.getElementById('set-pair-z-entry').textContent = pairZEntry;
                 document.getElementById('set-pair-z-exit').textContent = s.pair_z_exit ? s.pair_z_exit.toFixed(1) : '0.5';
