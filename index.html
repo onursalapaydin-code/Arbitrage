@@ -613,7 +613,7 @@
                 const pairTb = document.getElementById('pair-tbody');
                 const pairZSection = document.getElementById('pair-zscore-section');
                 const pairZGrid = document.getElementById('pair-zscore-grid');
-                const pairKeys = d.pair_pos ? Object.keys(d.pair_pos) : [];
+                const pairKeys = d.pair_positions ? Object.keys(d.pair_positions) : [];
                 const pairZKeys = d.pair_z ? Object.keys(d.pair_z) : [];
                 document.getElementById('pair-count').textContent = pairKeys.length;
                 
@@ -622,7 +622,7 @@
                     pairSection.style.display = 'block';
                     pairTb.innerHTML = '';
                     let totalPairPnl = 0;
-                    for (const [pair, pos] of Object.entries(d.pair_pos)) {
+                    for (const [pair, pos] of Object.entries(d.pair_positions)) {
                         const lotA = pos.a || 0;
                         const lotB = pos.b || 0;
                         const openZ = pos.oz || 0;
@@ -659,7 +659,7 @@
                         else if (absZ >= 2.5) { zBg = 'rgba(249,115,22,0.2)'; zColor = '#f97316'; zLabel = 'Yüksek'; }
                         else if (absZ >= 2) { zBg = 'rgba(245,158,11,0.2)'; zColor = '#f59e0b'; zLabel = 'Sinyal'; }
                         
-                        const hasPos = d.pair_pos && d.pair_pos[pair];
+                        const hasPos = d.pair_positions && d.pair_positions[pair];
                         const posIndicator = hasPos ? '<span style="color:#06b6d4;font-size:0.7rem;"> ●</span>' : '';
                         
                         pairZGrid.innerHTML += '<div class="stat-card" style="background:'+zBg+';border:1px solid '+zColor+'33;"><div class="stat-label">'+pair+posIndicator+'</div><div class="stat-value" style="color:'+zColor+';">'+zVal.toFixed(2)+'</div><div class="stat-sub">'+zLabel+'</div></div>';
