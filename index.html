@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SN-NF Arbitraj Dashboard v17.10</title>
+    <title>SN-NF Arbitraj Dashboard v18</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e4; min-height: 100vh; padding: 20px; }
@@ -173,13 +173,15 @@
                     <div class="settings-card-title">💰 Bütçe Ayarları</div>
                     <div class="setting-row"><span class="setting-label">VIOP Bütçe</span><span id="set-viop-budget" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">SPOT Bütçe</span><span id="set-spot-budget" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">NF Bütçe</span><span id="set-nf-budget" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Test Modu</span><span id="set-test-mode" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
-                    <div class="settings-card-title">📊 Strateji</div>
+                    <div class="settings-card-title">📊 SN Strateji</div>
                     <div class="setting-row"><span class="setting-label">SN Min Marj</span><span id="set-sn-min" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Roll Min Marj</span><span id="set-roll-min" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Replacement Eşik</span><span id="set-replacement" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">GIE Kademe</span><span id="set-gie-depth" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
                     <div class="settings-card-title">🎯 BB93 Stratejisi</div>
@@ -188,22 +190,31 @@
                     <div class="setting-row"><span class="setting-label">Bitiş</span><span id="set-bb93-end" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
-                    <div class="settings-card-title">⚠️ Risk Yönetimi</div>
-                    <div class="setting-row"><span class="setting-label">Max Günlük Zarar</span><span id="set-max-loss" class="setting-value">-</span></div>
+                    <div class="settings-card-title">📈 NF Stratejisi</div>
+                    <div class="setting-row"><span class="setting-label">Durum</span><span id="set-nf-enabled" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Max Pozisyon</span><span id="set-nf-max" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Giriş BB ≥</span><span id="set-nf-entry-bb" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Çıkış BB ≤</span><span id="set-nf-exit-bb" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Saat Aralığı</span><span id="set-nf-hours" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
-                    <div class="settings-card-title">💰 Margin Uyarıları</div>
-                    <div class="setting-row"><span class="setting-label">Sarı (Uyarı)</span><span id="set-margin-warn" class="setting-value" style="color:#f59e0b">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Turuncu (Tehlike)</span><span id="set-margin-danger" class="setting-value" style="color:#f97316">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Kırmızı (Kritik)</span><span id="set-margin-crit" class="setting-value" style="color:#ef4444">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Gün İçi Min Kar</span><span id="set-intraday" class="setting-value">-</span></div>
+                    <div class="settings-card-title">⚠️ Risk Yönetimi</div>
+                    <div class="setting-row"><span class="setting-label">Max Günlük Zarar</span><span id="set-max-loss" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Margin Sarı</span><span id="set-margin-warn" class="setting-value" style="color:#f59e0b">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Margin Turuncu</span><span id="set-margin-danger" class="setting-value" style="color:#f97316">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Margin Kırmızı</span><span id="set-margin-crit" class="setting-value" style="color:#ef4444">-</span></div>
                 </div>
                 <div class="settings-card">
                     <div class="settings-card-title">🎯 Erken Çıkış</div>
-                    <div class="setting-row"><span class="setting-label">Çıkış Skoru</span><span id="set-early-score" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Erken Çıkış K</span><span id="set-early-k" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">BB Çıkış Ref</span><span id="set-bb-exit" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Gün İçi Min Kar</span><span id="set-intraday" class="setting-value">-</span></div>
+                </div>
+                <div class="settings-card">
+                    <div class="settings-card-title">⚙️ Sistem</div>
                     <div class="setting-row"><span class="setting-label">BB Periyodu</span><span id="set-bb-period" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Döngü (ms)</span><span id="set-loop-ms" class="setting-value">-</span></div>
+                    <div class="setting-row"><span class="setting-label">Cache Yolu</span><span id="set-cache-path" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
                     <div class="settings-card-title">🔗 Bağlantı</div>
@@ -614,14 +625,18 @@
                 if (!r.ok) return;
                 const s = await r.json();
                 
+                // Bütçe Ayarları
                 document.getElementById('set-viop-budget').textContent = formatMoney(s.viop_budget);
                 document.getElementById('set-spot-budget').textContent = formatMoney(s.spot_budget);
+                document.getElementById('set-nf-budget').textContent = s.nf_budget ? formatMoney(s.nf_budget) : '-';
                 document.getElementById('set-test-mode').textContent = s.test_mode ? 'AÇIK' : 'KAPALI';
                 document.getElementById('set-test-mode').className = 'setting-value ' + (s.test_mode ? 'warning' : 'highlight');
                 
+                // SN Strateji
                 document.getElementById('set-sn-min').textContent = s.sn_min_margin ? (s.sn_min_margin * 100).toFixed(2) + '%' : '-';
                 document.getElementById('set-roll-min').textContent = s.roll_min_margin ? (s.roll_min_margin * 100).toFixed(2) + '%' : '-';
                 document.getElementById('set-replacement').textContent = s.replacement_threshold ? (s.replacement_threshold * 100).toFixed(0) + '%' : '-';
+                document.getElementById('set-gie-depth').textContent = s.gie_depth_levels || '-';
                 
                 // BB93 ayarları
                 document.getElementById('set-bb93-enabled').textContent = s.bb93_enabled ? 'AKTİF' : 'KAPALI';
@@ -631,18 +646,31 @@
                 document.getElementById('set-bb93-start').textContent = bb93Start;
                 document.getElementById('set-bb93-end').textContent = bb93End;
                 
-                document.getElementById('set-max-loss').textContent = formatMoney(s.max_daily_loss);
+                // NF Stratejisi
+                document.getElementById('set-nf-enabled').textContent = s.nf_enabled ? 'AKTİF' : 'KAPALI';
+                document.getElementById('set-nf-enabled').className = 'setting-value ' + (s.nf_enabled ? 'highlight' : 'warning');
+                document.getElementById('set-nf-max').textContent = s.nf_max_positions || '1';
+                document.getElementById('set-nf-entry-bb').textContent = s.nf_entry_bb || '99';
+                document.getElementById('set-nf-exit-bb').textContent = s.nf_exit_bb || '27';
+                const nfStart = (s.nf_start_hour !== undefined ? s.nf_start_hour : 10) + ':' + String(s.nf_start_min !== undefined ? s.nf_start_min : 0).padStart(2,'0');
+                const nfEnd = (s.nf_end_hour !== undefined ? s.nf_end_hour : 12) + ':' + String(s.nf_end_min !== undefined ? s.nf_end_min : 0).padStart(2,'0');
+                document.getElementById('set-nf-hours').textContent = nfStart + ' - ' + nfEnd;
                 
-                // Margin uyarı ayarları
-                document.getElementById('set-margin-warn').textContent = s.margin_warning_pct !== undefined ? '<' + (s.margin_warning_pct * 100).toFixed(0) + '%' : '<%10';
-                document.getElementById('set-margin-danger').textContent = s.margin_danger_pct !== undefined ? '<' + (s.margin_danger_pct * 100).toFixed(0) + '%' : '<%5';
-                document.getElementById('set-margin-crit').textContent = s.margin_critical_pct !== undefined ? (s.margin_critical_pct * 100).toFixed(0) + '%' : '%0';
+                // Risk Yönetimi
+                document.getElementById('set-max-loss').textContent = formatMoney(s.max_daily_loss);
+                document.getElementById('set-margin-warn').textContent = s.margin_warning_pct !== undefined ? '<' + (s.margin_warning_pct * 100).toFixed(0) + '%' : '<10%';
+                document.getElementById('set-margin-danger').textContent = s.margin_danger_pct !== undefined ? '<' + (s.margin_danger_pct * 100).toFixed(0) + '%' : '<5%';
+                document.getElementById('set-margin-crit').textContent = s.margin_critical_pct !== undefined ? '<' + (s.margin_critical_pct * 100).toFixed(0) + '%' : '<0%';
+                
+                // Erken Çıkış
+                document.getElementById('set-early-k').textContent = s.early_exit_k !== undefined ? s.early_exit_k.toFixed(2) : '0.20';
+                document.getElementById('set-bb-exit').textContent = s.bb_exit_helper !== undefined ? '<' + s.bb_exit_helper.toFixed(0) : '<30';
                 document.getElementById('set-intraday').textContent = s.intraday_min_profit ? '‰' + (s.intraday_min_profit * 1000).toFixed(1) : '‰2';
                 
-                document.getElementById('set-early-score').textContent = s.early_close_score !== undefined ? s.early_close_score.toFixed(2) : '0.40';
-                document.getElementById('set-bb-exit').textContent = s.bb_exit_helper !== undefined ? '<' + s.bb_exit_helper.toFixed(0) : '<30';
+                // Sistem
                 document.getElementById('set-bb-period').textContent = s.bb_period || '-';
                 document.getElementById('set-loop-ms').textContent = s.loop_ms ? s.loop_ms + ' ms' : '-';
+                document.getElementById('set-cache-path').textContent = s.cache_path || 'D:\\arbit\\';
             } catch(e) { console.error('Settings:', e); }
         }
         
