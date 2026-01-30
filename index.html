@@ -622,8 +622,17 @@
             document.getElementById('set-token-status').className = 'setting-value ' + (GIST_TOKEN ? 'highlight' : 'warning');
             try {
                 const r = await fetch(getGistUrl('arb_settings.json'));
-                if (!r.ok) return;
-                const s = await r.json();
+                if (!r.ok) { console.error('Settings fetch failed:', r.status); return; }
+                const text = await r.text();
+                console.log('Settings raw:', text);
+                let s;
+                try {
+                    s = JSON.parse(text);
+                } catch(parseErr) {
+                    console.error('Settings JSON parse error:', parseErr, 'Raw:', text);
+                    return;
+                }
+                console.log('Settings parsed:', s);
                 
                 // Bütçe Ayarları
                 document.getElementById('set-viop-budget').textContent = formatMoney(s.viop_budget);
