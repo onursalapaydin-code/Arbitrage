@@ -638,17 +638,19 @@
                 document.getElementById('set-replacement').textContent = s.replacement_threshold ? (s.replacement_threshold * 100).toFixed(0) + '%' : '-';
                 document.getElementById('set-gie-depth').textContent = s.gie_depth_levels || '-';
                 
-                // BB93 ayarları
-                document.getElementById('set-bb93-enabled').textContent = s.bb93_enabled ? 'AKTİF' : 'KAPALI';
-                document.getElementById('set-bb93-enabled').className = 'setting-value ' + (s.bb93_enabled ? 'highlight' : 'warning');
+                // BB93 ayarları (undefined ise default true - settings.json'da 1/0 olarak saklanıyor)
+                const bb93Enabled = s.bb93_enabled !== undefined ? (s.bb93_enabled === 1 || s.bb93_enabled === true) : true;
+                document.getElementById('set-bb93-enabled').textContent = bb93Enabled ? 'AKTİF' : 'KAPALI';
+                document.getElementById('set-bb93-enabled').className = 'setting-value ' + (bb93Enabled ? 'highlight' : 'warning');
                 const bb93Start = (s.bb93_start_hour !== undefined ? s.bb93_start_hour : 10) + ':' + String(s.bb93_start_min !== undefined ? s.bb93_start_min : 0).padStart(2,'0');
                 const bb93End = (s.bb93_end_hour !== undefined ? s.bb93_end_hour : 12) + ':' + String(s.bb93_end_min !== undefined ? s.bb93_end_min : 55).padStart(2,'0');
                 document.getElementById('set-bb93-start').textContent = bb93Start;
                 document.getElementById('set-bb93-end').textContent = bb93End;
                 
-                // NF Stratejisi
-                document.getElementById('set-nf-enabled').textContent = s.nf_enabled ? 'AKTİF' : 'KAPALI';
-                document.getElementById('set-nf-enabled').className = 'setting-value ' + (s.nf_enabled ? 'highlight' : 'warning');
+                // NF Stratejisi (undefined ise default true - settings.json'da 1/0 olarak saklanıyor)
+                const nfEnabled = s.nf_enabled !== undefined ? (s.nf_enabled === 1 || s.nf_enabled === true) : true;
+                document.getElementById('set-nf-enabled').textContent = nfEnabled ? 'AKTİF' : 'KAPALI';
+                document.getElementById('set-nf-enabled').className = 'setting-value ' + (nfEnabled ? 'highlight' : 'warning');
                 document.getElementById('set-nf-max').textContent = s.nf_max_positions || '1';
                 document.getElementById('set-nf-entry-bb').textContent = s.nf_entry_bb || '99';
                 document.getElementById('set-nf-exit-bb').textContent = s.nf_exit_bb || '27';
