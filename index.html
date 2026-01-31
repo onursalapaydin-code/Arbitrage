@@ -651,19 +651,22 @@
                     pairZSection.style.display = 'block';
                     pairZGrid.innerHTML = '';
                     for (const [pair, z] of Object.entries(d.pair_z)) {
-                        const zVal = parseFloat(z) || 0;
+                        const isNull = z === null || z === undefined;
+                        const zVal = isNull ? 0 : parseFloat(z) || 0;
                         const absZ = Math.abs(zVal);
                         let zBg = 'rgba(16,185,129,0.1)';  // yeşil - normal
                         let zColor = '#10b981';
                         let zLabel = 'Normal';
-                        if (absZ >= 3) { zBg = 'rgba(239,68,68,0.2)'; zColor = '#ef4444'; zLabel = 'AŞIRI'; }
+                        if (isNull) { zBg = 'rgba(107,114,128,0.2)'; zColor = '#6b7280'; zLabel = 'Veri Yok'; }
+                        else if (absZ >= 3) { zBg = 'rgba(239,68,68,0.2)'; zColor = '#ef4444'; zLabel = 'AŞIRI'; }
                         else if (absZ >= 2.5) { zBg = 'rgba(249,115,22,0.2)'; zColor = '#f97316'; zLabel = 'Yüksek'; }
                         else if (absZ >= 2) { zBg = 'rgba(245,158,11,0.2)'; zColor = '#f59e0b'; zLabel = 'Sinyal'; }
                         
                         const hasPos = d.pair_positions && d.pair_positions[pair];
                         const posIndicator = hasPos ? '<span style="color:#06b6d4;font-size:0.7rem;"> ●</span>' : '';
+                        const displayVal = isNull ? '—' : zVal.toFixed(2);
                         
-                        pairZGrid.innerHTML += '<div class="stat-card" style="background:'+zBg+';border:1px solid '+zColor+'33;"><div class="stat-label">'+pair+posIndicator+'</div><div class="stat-value" style="color:'+zColor+';">'+zVal.toFixed(2)+'</div><div class="stat-sub">'+zLabel+'</div></div>';
+                        pairZGrid.innerHTML += '<div class="stat-card" style="background:'+zBg+';border:1px solid '+zColor+'33;"><div class="stat-label">'+pair+posIndicator+'</div><div class="stat-value" style="color:'+zColor+';">'+displayVal+'</div><div class="stat-sub">'+zLabel+'</div></div>';
                     }
                 } else {
                     pairZSection.style.display = 'none';
