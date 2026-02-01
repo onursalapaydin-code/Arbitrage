@@ -7698,23 +7698,35 @@ Action CheckScheduledRecovery = () => {
     // 16:50 - T+2 negatif kontrolü
     if (time == 1650 && t2NegativeDetected && (now - lastRecoveryCheck).TotalMinutes > 5) {
         Log("⏰ 16:50 T+2 negatif kontrolü başlatılıyor...");
-        
+
         // Önce bakiyeleri tazele
         UpdateBalances();
-        
+
         // Hala negatifse pozisyon kapat
         if (t2Balance < 0) {
             Log("🚨 T+2 hala negatif: " + t2Balance.ToString("N0") + " - pozisyon kapatma başlatılıyor");
-            
+
+            // BIST açık mı kontrol et (yarım gün olabilir)
+            var t2Now = DateTime.Now;
+            var t2CurrentMinutes = t2Now.Hour * 60 + t2Now.Minute;
+            var t2BistCloseMinutes = BIST_CLOSE_HOUR * 60 + BIST_CLOSE_MINUTE;
+            var t2IsBistOpen = t2CurrentMinutes >= (MARKET_OPEN_HOUR * 60 + MARKET_OPEN_MINUTE) && t2CurrentMinutes < t2BistCloseMinutes;
+
+            if (!t2IsBistOpen) {
+                Log("🚨 T+2 UYARI: BIST KAPALI! Pozisyon kapatılamıyor. T+2 negatif: " + t2Balance.ToString("N0") + " TL - Yarın manuel müdahale gerekebilir!");
+                lastRecoveryCheck = DateTime.Now;
+                return;
+            }
+
             var needToFree = Math.Abs(t2Balance);
             var freedSpot = 0m;
             var closedCount = 0;
-            
+
             // En düşük expectedPnl olan pozisyonları bul ve kapat
             while (freedSpot < needToFree && snPos.Count > 0 && closedCount < 5) {
                 string worstSym = null;
                 var worstPnl = decimal.MaxValue;
-                
+
                 foreach (var kv in snPos) {
                     var expPnl = kv.Value[5];
                     if (expPnl < worstPnl) {
@@ -7722,24 +7734,24 @@ Action CheckScheduledRecovery = () => {
                         worstSym = kv.Key;
                     }
                 }
-                
+
                 if (worstSym == null) break;
-                
+
                 var worstPos = snPos[worstSym];
                 var posSpotValue = worstPos[2] * worstPos[0];  // spotEntry * spotQty
-                
+
                 Log("📊 T+2 KAPATMA: " + worstSym + " ExpPnl:" + worstPnl.ToString("N0") + " SpotDeğer:" + posSpotValue.ToString("N0"));
-                
+
                 // Sıfır kontrolü
                 if (posSpotValue <= 0) {
                     Log("⚠️ T+2: posSpotValue sıfır, atlanıyor: " + worstSym);
                     break;
                 }
-                
+
                 // Ne kadar kapatmalı?
                 var neededRatio = (needToFree - freedSpot) / posSpotValue;
                 neededRatio = Math.Min(1m, neededRatio);  // En fazla %100
-                
+
                 if (neededRatio >= 0.9m || worstPos[1] <= 2) {
                     // Tam kapat
                     var nearC = GetContract(worstSym, 0);
@@ -7752,24 +7764,38 @@ Action CheckScheduledRecovery = () => {
                     var closeSQty = (int)(closeNQty * GetMultiplier(worstSym));
                     closeSQty = Math.Max(100, closeSQty);
                     closeSQty = ((closeSQty + 99) / 100) * 100;  // 100'e yuvarla
-                    
+
                     var nearC = GetContract(worstSym, 0);
                     PartialCloseSN(worstSym, nearC, closeSQty, closeNQty, "T2_NEGATIVE_PARTIAL");
                     freedSpot += posSpotValue * neededRatio;
                 }
-                
+
                 closedCount++;
-                
+
                 if (freedSpot >= needToFree) break;
             }
-            
-            Log("✅ T+2 düzeltme tamamlandı: " + closedCount + " pozisyon kapatıldı, serbest bırakılan: " + freedSpot.ToString("N0"));
-            t2NegativeDetected = false;  // Takibi sıfırla
+
+            // Yeterli kapatılamadıysa uyar
+            if (freedSpot < needToFree) {
+                Log("🚨 T+2 UYARI: Yeterli pozisyon kapatılamadı! Gereken: " + needToFree.ToString("N0") + " Serbest: " + freedSpot.ToString("N0") + " TL");
+            }
+
+            // İşlemler sonrası T+2 bakiyesini tekrar kontrol et
+            System.Threading.Thread.Sleep(2000);  // Emirlerin işlenmesi için bekle
+            UpdateBalances();
+
+            if (t2Balance < 0) {
+                Log("🚨 T+2 UYARI: İşlemler sonrası hala negatif: " + t2Balance.ToString("N0") + " TL - Yarın manuel müdahale gerekebilir!");
+                // t2NegativeDetected = true olarak kalır, ertesi gün tekrar denenir
+            } else {
+                Log("✅ T+2 düzeltme başarılı: " + closedCount + " pozisyon kapatıldı, yeni bakiye: " + t2Balance.ToString("N0") + " TL");
+                t2NegativeDetected = false;
+            }
         } else {
             Log("✅ T+2 pozitife döndü, kapatma gerekmiyor: " + t2Balance.ToString("N0"));
             t2NegativeDetected = false;
         }
-        
+
         lastRecoveryCheck = DateTime.Now;
     }
 };
