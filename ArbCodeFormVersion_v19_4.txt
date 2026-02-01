@@ -135,8 +135,8 @@
 // - YENİ: SN vade son günü (daysN=0) güvenlik önlemleri
 //   * Yeni pozisyon açılmıyor
 //   * Büyütme/Replacement yapılmıyor
-//   * Kapanış/Rollover sadece 12:30 sonrası (yarım gün vadeler için)
-// - YENİ: NF vade son günü (daysN=0) 12:30 kontrolü eklendi
+//   * Kapanış/Rollover sadece 12:00 sonrası (yarım gün 12:30 kapanışına 30dk marj)
+// - YENİ: NF vade son günü (daysN=0) 12:00 kontrolü eklendi
 // - YENİ: NF kontrat kodları saklanıyor (vade geçişinde doğru kontratların kullanılması için)
 //   * nfContracts dictionary eklendi
 //   * positions.json'da nearC/farC alanları eklendi (backward compatible)
@@ -3142,14 +3142,14 @@ Func<string, string, decimal, decimal, int, decimal, string> CheckSNClose =
     var currentSpread = spotBidForPnL > 0 ? (nearAskForPnL - spotBidForPnL) / spotBidForPnL : 0;
     var spreadDaralma = entrySpread - currentSpread;  // Pozitif = spread daraldı (iyi)
     
-    // 1. VADE SONU - ZORUNLU (12:30 sonrası - yarım gün vade için güvenli)
+    // 1. VADE SONU - ZORUNLU (12:00 sonrası - yarım gün vade 12:30 kapanışına 30dk marj)
     if (daysN <= 0) {
         var expiryNow = DateTime.Now;
         var expiryMinutes = expiryNow.Hour * 60 + expiryNow.Minute;
-        if (expiryMinutes >= 12 * 60 + 30) {  // 12:30 sonrası
+        if (expiryMinutes >= 12 * 60) {  // 12:00 sonrası
             return "EXPIRY_MANDATORY";
         }
-        // 12:30 öncesi - henüz kapatma
+        // 12:00 öncesi - henüz kapatma
         return null;
     }
     
@@ -3657,14 +3657,14 @@ Func<string, string, string, decimal, decimal, int, string> CheckNFClose =
     var farEntry = p[3];
     var entrySpread = p[4];
     
-    // Near vade sonu kontrolü (12:30 sonrası)
+    // Near vade sonu kontrolü (12:00 sonrası - yarım gün 12:30 kapanışına 30dk marj)
     if (daysN <= 0) {
         var expiryNow = DateTime.Now;
         var expiryMinutes = expiryNow.Hour * 60 + expiryNow.Minute;
-        if (expiryMinutes >= 12 * 60 + 30) {  // 12:30 sonrası
+        if (expiryMinutes >= 12 * 60) {  // 12:00 sonrası
             return "NF_EXPIRY";
         }
-        return null;  // 12:30 öncesi bekle
+        return null;  // 12:00 öncesi bekle
     }
     
     // P&L hesapla (kapanış için: Near SAT @ nearBid, Far AL @ farAsk)
@@ -8344,8 +8344,8 @@ Action MainLoop = () => {
                 }
             }
             
-            // Rollover kontrolü (vadeye 1 gün veya vade günü, sadece BIST açıkken, vade günü 12:30 sonrası)
-            var rolloverTimeOk = daysN > 0 || (DateTime.Now.Hour * 60 + DateTime.Now.Minute >= 12 * 60 + 30);
+            // Rollover kontrolü (vadeye 1 gün veya vade günü, sadece BIST açıkken, vade günü 12:00 sonrası)
+            var rolloverTimeOk = daysN > 0 || (DateTime.Now.Hour * 60 + DateTime.Now.Minute >= 12 * 60);
             if (isBistOpen && snPos.ContainsKey(sym) && daysN <= 1 && daysN >= 0 && spotAsk > 0 && rolloverTimeOk) {
                 var farBidDepth = ReadDepth(FUTURES_PREFIX + farC, "BID", 0, 1, 50);
                 var farBid = farBidDepth.Item1 ? farBidDepth.Item4 : 0m;
