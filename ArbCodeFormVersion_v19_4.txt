@@ -530,6 +530,7 @@ var t2Balance = 0m;    // T+2 bakiye (canlı mod için)
 var apiDataOk = false; // API verisi geldi mi? (canlıda false ise hiç işlem yapma)
 var t2NegativeDetected = false;  // T+2 negatif tespit edildi mi?
 var t2NegativeTime = DateTime.MinValue;  // İlk tespit zamanı
+var t2CriticalAlert = false;  // T+2 kritik uyarı (17:00 sonrası hala negatifse)
 
 // ====================================
 // API CACHE SİSTEMİ
@@ -4950,7 +4951,16 @@ Func<string> BuildStatsJson = () => {
     sb.Append("\"broker\":" + (brokerConnected ? "true" : "false") + ",");
     sb.Append("\"margin\":" + marginStatus + ",");  // 0=normal, 1=warning, 2=danger, 3=critical
     sb.Append("\"circuit\":" + (indexCircuitBreaker ? "true" : "false") + ",");  // Endeks devre kesici
-    
+
+    // Kritik uyarılar dizisi
+    sb.Append("\"alerts\":[");
+    var alertList = new System.Collections.Generic.List<string>();
+    if (t2CriticalAlert) alertList.Add("\"T2_CRITICAL\"");
+    if (indexCircuitBreaker) alertList.Add("\"INDEX_CIRCUIT\"");
+    if (marginStatus >= 3) alertList.Add("\"MARGIN_CRITICAL\"");
+    sb.Append(string.Join(",", alertList.ToArray()));
+    sb.Append("],");
+
     // VİOP serbest oran hesapla: kullanılabilir / (kullanılabilir + kullanılan)
     var viopToplam = viopBalance + viopUsed;
     var viopFreePct = viopToplam > 0 ? viopBalance / viopToplam : 0m;
@@ -6371,10 +6381,20 @@ Action UpdateBalances = () => {
                             t2NegativeTime = DateTime.Now;
                             Log("⚠️ T+2 bakiye negatif: " + t2Balance.ToString("N0") + " - takibe alındı, 16:50'de kontrol edilecek");
                         }
+                        // 17:00 sonrası hala negatifse kritik uyarı
+                        var t2Hour = DateTime.Now.Hour;
+                        if (t2Hour >= 17 && !t2CriticalAlert) {
+                            t2CriticalAlert = true;
+                            Log("🚨 T+2 KRİTİK: 17:00 sonrası hala negatif: " + t2Balance.ToString("N0") + " TL");
+                        }
                     } else {
                         if (t2NegativeDetected) {
                             Log("✅ T+2 bakiye pozitife döndü: " + t2Balance.ToString("N0"));
                             t2NegativeDetected = false;
+                        }
+                        if (t2CriticalAlert) {
+                            Log("✅ T+2 kritik uyarı kaldırıldı - bakiye pozitif: " + t2Balance.ToString("N0"));
+                            t2CriticalAlert = false;
                         }
                     }
                 }
