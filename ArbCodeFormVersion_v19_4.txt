@@ -135,8 +135,8 @@
 // - YENİ: SN vade son günü (daysN=0) güvenlik önlemleri
 //   * Yeni pozisyon açılmıyor
 //   * Büyütme/Replacement yapılmıyor
-//   * Kapanış/Rollover sadece 12:30 sonrası (yarım gün vadeler için)
-// - YENİ: NF vade son günü (daysN=0) 12:30 kontrolü eklendi
+//   * Kapanış/Rollover sadece 12:00 sonrası (yarım gün 12:30 kapanışına 30dk marj)
+// - YENİ: NF vade son günü (daysN=0) 12:00 kontrolü eklendi
 // - YENİ: NF kontrat kodları saklanıyor (vade geçişinde doğru kontratların kullanılması için)
 //   * nfContracts dictionary eklendi
 //   * positions.json'da nearC/farC alanları eklendi (backward compatible)
@@ -530,6 +530,7 @@ var t2Balance = 0m;    // T+2 bakiye (canlı mod için)
 var apiDataOk = false; // API verisi geldi mi? (canlıda false ise hiç işlem yapma)
 var t2NegativeDetected = false;  // T+2 negatif tespit edildi mi?
 var t2NegativeTime = DateTime.MinValue;  // İlk tespit zamanı
+var t2CriticalAlert = false;  // T+2 kritik uyarı (17:00 sonrası hala negatifse)
 
 // ====================================
 // API CACHE SİSTEMİ
@@ -3142,14 +3143,14 @@ Func<string, string, decimal, decimal, int, decimal, string> CheckSNClose =
     var currentSpread = spotBidForPnL > 0 ? (nearAskForPnL - spotBidForPnL) / spotBidForPnL : 0;
     var spreadDaralma = entrySpread - currentSpread;  // Pozitif = spread daraldı (iyi)
     
-    // 1. VADE SONU - ZORUNLU (12:30 sonrası - yarım gün vade için güvenli)
+    // 1. VADE SONU - ZORUNLU (12:00 sonrası - yarım gün vade 12:30 kapanışına 30dk marj)
     if (daysN <= 0) {
         var expiryNow = DateTime.Now;
         var expiryMinutes = expiryNow.Hour * 60 + expiryNow.Minute;
-        if (expiryMinutes >= 12 * 60 + 30) {  // 12:30 sonrası
+        if (expiryMinutes >= 12 * 60) {  // 12:00 sonrası
             return "EXPIRY_MANDATORY";
         }
-        // 12:30 öncesi - henüz kapatma
+        // 12:00 öncesi - henüz kapatma
         return null;
     }
     
@@ -3657,14 +3658,14 @@ Func<string, string, string, decimal, decimal, int, string> CheckNFClose =
     var farEntry = p[3];
     var entrySpread = p[4];
     
-    // Near vade sonu kontrolü (12:30 sonrası)
+    // Near vade sonu kontrolü (12:00 sonrası - yarım gün 12:30 kapanışına 30dk marj)
     if (daysN <= 0) {
         var expiryNow = DateTime.Now;
         var expiryMinutes = expiryNow.Hour * 60 + expiryNow.Minute;
-        if (expiryMinutes >= 12 * 60 + 30) {  // 12:30 sonrası
+        if (expiryMinutes >= 12 * 60) {  // 12:00 sonrası
             return "NF_EXPIRY";
         }
-        return null;  // 12:30 öncesi bekle
+        return null;  // 12:00 öncesi bekle
     }
     
     // P&L hesapla (kapanış için: Near SAT @ nearBid, Far AL @ farAsk)
@@ -4950,7 +4951,16 @@ Func<string> BuildStatsJson = () => {
     sb.Append("\"broker\":" + (brokerConnected ? "true" : "false") + ",");
     sb.Append("\"margin\":" + marginStatus + ",");  // 0=normal, 1=warning, 2=danger, 3=critical
     sb.Append("\"circuit\":" + (indexCircuitBreaker ? "true" : "false") + ",");  // Endeks devre kesici
-    
+
+    // Kritik uyarılar dizisi
+    sb.Append("\"alerts\":[");
+    var alertList = new System.Collections.Generic.List<string>();
+    if (t2CriticalAlert) alertList.Add("\"T2_CRITICAL\"");
+    if (indexCircuitBreaker) alertList.Add("\"INDEX_CIRCUIT\"");
+    if (marginStatus >= 3) alertList.Add("\"MARGIN_CRITICAL\"");
+    sb.Append(string.Join(",", alertList.ToArray()));
+    sb.Append("],");
+
     // VİOP serbest oran hesapla: kullanılabilir / (kullanılabilir + kullanılan)
     var viopToplam = viopBalance + viopUsed;
     var viopFreePct = viopToplam > 0 ? viopBalance / viopToplam : 0m;
@@ -6371,10 +6381,20 @@ Action UpdateBalances = () => {
                             t2NegativeTime = DateTime.Now;
                             Log("⚠️ T+2 bakiye negatif: " + t2Balance.ToString("N0") + " - takibe alındı, 16:50'de kontrol edilecek");
                         }
+                        // 17:00 sonrası hala negatifse kritik uyarı
+                        var t2Hour = DateTime.Now.Hour;
+                        if (t2Hour >= 17 && !t2CriticalAlert) {
+                            t2CriticalAlert = true;
+                            Log("🚨 T+2 KRİTİK: 17:00 sonrası hala negatif: " + t2Balance.ToString("N0") + " TL");
+                        }
                     } else {
                         if (t2NegativeDetected) {
                             Log("✅ T+2 bakiye pozitife döndü: " + t2Balance.ToString("N0"));
                             t2NegativeDetected = false;
+                        }
+                        if (t2CriticalAlert) {
+                            Log("✅ T+2 kritik uyarı kaldırıldı - bakiye pozitif: " + t2Balance.ToString("N0"));
+                            t2CriticalAlert = false;
                         }
                     }
                 }
@@ -7698,23 +7718,35 @@ Action CheckScheduledRecovery = () => {
     // 16:50 - T+2 negatif kontrolü
     if (time == 1650 && t2NegativeDetected && (now - lastRecoveryCheck).TotalMinutes > 5) {
         Log("⏰ 16:50 T+2 negatif kontrolü başlatılıyor...");
-        
+
         // Önce bakiyeleri tazele
         UpdateBalances();
-        
+
         // Hala negatifse pozisyon kapat
         if (t2Balance < 0) {
             Log("🚨 T+2 hala negatif: " + t2Balance.ToString("N0") + " - pozisyon kapatma başlatılıyor");
-            
+
+            // BIST açık mı kontrol et (yarım gün olabilir)
+            var t2Now = DateTime.Now;
+            var t2CurrentMinutes = t2Now.Hour * 60 + t2Now.Minute;
+            var t2BistCloseMinutes = BIST_CLOSE_HOUR * 60 + BIST_CLOSE_MINUTE;
+            var t2IsBistOpen = t2CurrentMinutes >= (MARKET_OPEN_HOUR * 60 + MARKET_OPEN_MINUTE) && t2CurrentMinutes < t2BistCloseMinutes;
+
+            if (!t2IsBistOpen) {
+                Log("🚨 T+2 UYARI: BIST KAPALI! Pozisyon kapatılamıyor. T+2 negatif: " + t2Balance.ToString("N0") + " TL - Yarın manuel müdahale gerekebilir!");
+                lastRecoveryCheck = DateTime.Now;
+                return;
+            }
+
             var needToFree = Math.Abs(t2Balance);
             var freedSpot = 0m;
             var closedCount = 0;
-            
+
             // En düşük expectedPnl olan pozisyonları bul ve kapat
             while (freedSpot < needToFree && snPos.Count > 0 && closedCount < 5) {
                 string worstSym = null;
                 var worstPnl = decimal.MaxValue;
-                
+
                 foreach (var kv in snPos) {
                     var expPnl = kv.Value[5];
                     if (expPnl < worstPnl) {
@@ -7722,24 +7754,24 @@ Action CheckScheduledRecovery = () => {
                         worstSym = kv.Key;
                     }
                 }
-                
+
                 if (worstSym == null) break;
-                
+
                 var worstPos = snPos[worstSym];
                 var posSpotValue = worstPos[2] * worstPos[0];  // spotEntry * spotQty
-                
+
                 Log("📊 T+2 KAPATMA: " + worstSym + " ExpPnl:" + worstPnl.ToString("N0") + " SpotDeğer:" + posSpotValue.ToString("N0"));
-                
+
                 // Sıfır kontrolü
                 if (posSpotValue <= 0) {
                     Log("⚠️ T+2: posSpotValue sıfır, atlanıyor: " + worstSym);
                     break;
                 }
-                
+
                 // Ne kadar kapatmalı?
                 var neededRatio = (needToFree - freedSpot) / posSpotValue;
                 neededRatio = Math.Min(1m, neededRatio);  // En fazla %100
-                
+
                 if (neededRatio >= 0.9m || worstPos[1] <= 2) {
                     // Tam kapat
                     var nearC = GetContract(worstSym, 0);
@@ -7752,24 +7784,38 @@ Action CheckScheduledRecovery = () => {
                     var closeSQty = (int)(closeNQty * GetMultiplier(worstSym));
                     closeSQty = Math.Max(100, closeSQty);
                     closeSQty = ((closeSQty + 99) / 100) * 100;  // 100'e yuvarla
-                    
+
                     var nearC = GetContract(worstSym, 0);
                     PartialCloseSN(worstSym, nearC, closeSQty, closeNQty, "T2_NEGATIVE_PARTIAL");
                     freedSpot += posSpotValue * neededRatio;
                 }
-                
+
                 closedCount++;
-                
+
                 if (freedSpot >= needToFree) break;
             }
-            
-            Log("✅ T+2 düzeltme tamamlandı: " + closedCount + " pozisyon kapatıldı, serbest bırakılan: " + freedSpot.ToString("N0"));
-            t2NegativeDetected = false;  // Takibi sıfırla
+
+            // Yeterli kapatılamadıysa uyar
+            if (freedSpot < needToFree) {
+                Log("🚨 T+2 UYARI: Yeterli pozisyon kapatılamadı! Gereken: " + needToFree.ToString("N0") + " Serbest: " + freedSpot.ToString("N0") + " TL");
+            }
+
+            // İşlemler sonrası T+2 bakiyesini tekrar kontrol et
+            System.Threading.Thread.Sleep(2000);  // Emirlerin işlenmesi için bekle
+            UpdateBalances();
+
+            if (t2Balance < 0) {
+                Log("🚨 T+2 UYARI: İşlemler sonrası hala negatif: " + t2Balance.ToString("N0") + " TL - Yarın manuel müdahale gerekebilir!");
+                // t2NegativeDetected = true olarak kalır, ertesi gün tekrar denenir
+            } else {
+                Log("✅ T+2 düzeltme başarılı: " + closedCount + " pozisyon kapatıldı, yeni bakiye: " + t2Balance.ToString("N0") + " TL");
+                t2NegativeDetected = false;
+            }
         } else {
             Log("✅ T+2 pozitife döndü, kapatma gerekmiyor: " + t2Balance.ToString("N0"));
             t2NegativeDetected = false;
         }
-        
+
         lastRecoveryCheck = DateTime.Now;
     }
 };
@@ -8344,8 +8390,8 @@ Action MainLoop = () => {
                 }
             }
             
-            // Rollover kontrolü (vadeye 1 gün veya vade günü, sadece BIST açıkken, vade günü 12:30 sonrası)
-            var rolloverTimeOk = daysN > 0 || (DateTime.Now.Hour * 60 + DateTime.Now.Minute >= 12 * 60 + 30);
+            // Rollover kontrolü (vadeye 1 gün veya vade günü, sadece BIST açıkken, vade günü 12:00 sonrası)
+            var rolloverTimeOk = daysN > 0 || (DateTime.Now.Hour * 60 + DateTime.Now.Minute >= 12 * 60);
             if (isBistOpen && snPos.ContainsKey(sym) && daysN <= 1 && daysN >= 0 && spotAsk > 0 && rolloverTimeOk) {
                 var farBidDepth = ReadDepth(FUTURES_PREFIX + farC, "BID", 0, 1, 50);
                 var farBid = farBidDepth.Item1 ? farBidDepth.Item4 : 0m;

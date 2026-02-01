@@ -41,6 +41,13 @@
         tr:hover { background: rgba(255,255,255,0.03); }
         .pending-alert { background: linear-gradient(135deg, #f59e0b22 0%, #f5720b22 100%); border: 1px solid #f59e0b; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
         .pending-alert.hidden { display: none; }
+        .critical-alert { background: linear-gradient(135deg, #ef444422 0%, #dc262622 100%); border: 2px solid #ef4444; border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; animation: critical-pulse 1.5s infinite; }
+        .critical-alert.hidden { display: none; }
+        .critical-alert-icon { font-size: 1.5rem; }
+        .critical-alert-content { flex: 1; }
+        .critical-alert-title { font-weight: 700; color: #ef4444; margin-bottom: 4px; }
+        .critical-alert-desc { font-size: 0.9rem; color: #fca5a5; }
+        @keyframes critical-pulse { 0%, 100% { border-color: #ef4444; } 50% { border-color: #f87171; } }
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
         .stat-card { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 15px; text-align: center; }
         .stat-label { font-size: 0.8rem; color: #6b7280; margin-bottom: 5px; }
@@ -119,6 +126,13 @@
         
         <!-- Ana Sayfa -->
         <div id="page-main" class="page">
+            <div id="critical-alert" class="critical-alert hidden">
+                <span class="critical-alert-icon">🚨</span>
+                <div class="critical-alert-content">
+                    <div class="critical-alert-title">KRİTİK UYARI</div>
+                    <div id="critical-alert-text" class="critical-alert-desc"></div>
+                </div>
+            </div>
             <div id="pending-alert" class="pending-alert hidden">
                 <span>⚠️</span>
                 <div><strong id="pending-count">0</strong> bekleyen emir var.</div>
@@ -504,7 +518,24 @@
                 // Devre kesici durumu
                 const circuitBadge = document.getElementById('badge-circuit');
                 circuitBadge.style.display = d.circuit ? 'inline' : 'none';
-                
+
+                // Kritik uyarılar
+                const alerts = d.alerts || [];
+                const criticalBox = document.getElementById('critical-alert');
+                const criticalText = document.getElementById('critical-alert-text');
+                if (alerts.length > 0) {
+                    const alertMessages = {
+                        'T2_CRITICAL': '⚠️ T+2 Bakiye 17:00 sonrası hala negatif! Manuel müdahale gerekebilir.',
+                        'INDEX_CIRCUIT': '⚡ Endeks devre kesici aktif - Yeni pozisyon açılmıyor.',
+                        'MARGIN_CRITICAL': '🔴 Margin kritik seviyede - Pozisyon kapatılıyor.'
+                    };
+                    const messages = alerts.map(a => alertMessages[a] || a).join('<br>');
+                    criticalText.innerHTML = messages;
+                    criticalBox.classList.remove('hidden');
+                } else {
+                    criticalBox.classList.add('hidden');
+                }
+
                 // Running durumunu kontrol et
                 const isRobotRunning = d.running !== false;  // undefined veya true ise çalışıyor
                 updateRobotStatus(isRobotRunning);
