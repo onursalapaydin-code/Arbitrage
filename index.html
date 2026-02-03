@@ -749,7 +749,7 @@
                 // Bütçe Ayarları
                 document.getElementById('set-viop-budget').textContent = formatMoney(s.viop_budget);
                 document.getElementById('set-spot-budget').textContent = formatMoney(s.spot_budget);
-                document.getElementById('set-nf-budget').textContent = s.nf_budget ? formatMoney(s.nf_budget) : '-';
+                document.getElementById('set-nf-budget').textContent = s.nf_budget_fixed ? formatMoney(s.nf_budget_fixed) : (s.nf_budget ? formatMoney(s.nf_budget) : '-');
                 document.getElementById('set-test-mode').textContent = s.test_mode ? 'AÇIK' : 'KAPALI';
                 document.getElementById('set-test-mode').className = 'setting-value ' + (s.test_mode ? 'warning' : 'highlight');
                 
