@@ -276,6 +276,7 @@
         let GIST_ID = localStorage.getItem('arbGistId') || '';
         let GIST_TOKEN = localStorage.getItem('arbGistToken') || '';
         let lastUpdateTime = null;
+        let statsData = null;  // Stats verisi (nf_max_positions için)
         
         function getGistUrl(file) {
             return `https://gist.githubusercontent.com/${GIST_USER}/${GIST_ID}/raw/${file}?t=${Date.now()}`;
@@ -480,6 +481,7 @@
                 const r = await fetch(getGistUrl('arb_stats.json'));
                 if (!r.ok) { document.getElementById('set-gist-status').textContent = 'Bağlantı Hatası'; return; }
                 const d = await r.json();
+                statsData = d;  // Global'e kaydet (loadSettings için)
                 lastUpdateTime = d.ts;
                 
                 // Veri bağlantısı kontrolü (IdealData)
@@ -772,7 +774,7 @@
                 const nfEnabled = s.nf_enabled !== undefined ? (s.nf_enabled === 1 || s.nf_enabled === true) : true;
                 document.getElementById('set-nf-enabled').textContent = nfEnabled ? 'AKTİF' : 'KAPALI';
                 document.getElementById('set-nf-enabled').className = 'setting-value ' + (nfEnabled ? 'highlight' : 'warning');
-                document.getElementById('set-nf-max').textContent = s.nf_max_positions || '1';
+                document.getElementById('set-nf-max').textContent = (statsData && statsData.nf_max_positions) || s.nf_max_positions || '1';
                 document.getElementById('set-nf-entry-bb').textContent = s.nf_entry_bb || '99';
                 document.getElementById('set-nf-exit-bb').textContent = s.nf_exit_bb || '27';
                 const nfStart = (s.nf_start_hour !== undefined ? s.nf_start_hour : 10) + ':' + String(s.nf_start_min !== undefined ? s.nf_start_min : 0).padStart(2,'0');
