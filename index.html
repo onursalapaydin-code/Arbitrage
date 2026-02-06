@@ -276,7 +276,6 @@
         let GIST_ID = localStorage.getItem('arbGistId') || '';
         let GIST_TOKEN = localStorage.getItem('arbGistToken') || '';
         let lastUpdateTime = null;
-        let statsData = null;  // Stats verisi (nf_max_positions için)
         
         function getGistUrl(file) {
             return `https://gist.githubusercontent.com/${GIST_USER}/${GIST_ID}/raw/${file}?t=${Date.now()}`;
@@ -343,7 +342,7 @@
         
         async function sendPauseCommand() {
             if (!GIST_ID || !GIST_TOKEN) {
-                alert('Komut göndermek için Ayarlar > Bağlantı bölümünden token giriniz.');
+                alert('Komut göndermek için Ayarlar > Bağlantı bölümünden token girmeniz gerekiyor.');
                 return;
             }
             
@@ -481,7 +480,6 @@
                 const r = await fetch(getGistUrl('arb_stats.json'));
                 if (!r.ok) { document.getElementById('set-gist-status').textContent = 'Bağlantı Hatası'; return; }
                 const d = await r.json();
-                statsData = d;  // Global'e kaydet (loadSettings için)
                 lastUpdateTime = d.ts;
                 
                 // Veri bağlantısı kontrolü (IdealData)
@@ -751,7 +749,7 @@
                 // Bütçe Ayarları
                 document.getElementById('set-viop-budget').textContent = formatMoney(s.viop_budget);
                 document.getElementById('set-spot-budget').textContent = formatMoney(s.spot_budget);
-                document.getElementById('set-nf-budget').textContent = s.nf_budget_fixed ? formatMoney(s.nf_budget_fixed) : (s.nf_budget ? formatMoney(s.nf_budget) : '-');
+                document.getElementById('set-nf-budget').textContent = s.nf_budget ? formatMoney(s.nf_budget) : '-';
                 document.getElementById('set-test-mode').textContent = s.test_mode ? 'AÇIK' : 'KAPALI';
                 document.getElementById('set-test-mode').className = 'setting-value ' + (s.test_mode ? 'warning' : 'highlight');
                 
@@ -774,7 +772,7 @@
                 const nfEnabled = s.nf_enabled !== undefined ? (s.nf_enabled === 1 || s.nf_enabled === true) : true;
                 document.getElementById('set-nf-enabled').textContent = nfEnabled ? 'AKTİF' : 'KAPALI';
                 document.getElementById('set-nf-enabled').className = 'setting-value ' + (nfEnabled ? 'highlight' : 'warning');
-                document.getElementById('set-nf-max').textContent = (statsData && statsData.nf_max_positions) || s.nf_max_positions || '1';
+                document.getElementById('set-nf-max').textContent = s.nf_max_positions || '1';
                 document.getElementById('set-nf-entry-bb').textContent = s.nf_entry_bb || '99';
                 document.getElementById('set-nf-exit-bb').textContent = s.nf_exit_bb || '27';
                 const nfStart = (s.nf_start_hour !== undefined ? s.nf_start_hour : 10) + ':' + String(s.nf_start_min !== undefined ? s.nf_start_min : 0).padStart(2,'0');
