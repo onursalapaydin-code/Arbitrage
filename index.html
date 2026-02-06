@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SN-NF-PAIR Arbitraj Dashboard v19.4</title>
+    <title>SN Arbitraj Dashboard v19.5</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e4e4e4; min-height: 100vh; padding: 20px; }
@@ -160,18 +160,6 @@
                 <div class="table-title">📈 Açık Pozisyonlar <span id="positions-count" class="count">0</span></div>
                 <table><thead><tr><th>Sembol</th><th>Spot</th><th>Near</th><th>Spread</th><th>Beklenen Kar</th><th>Anlık P&L</th><th>Büyütme</th></tr></thead><tbody id="positions-tbody"></tbody></table>
             </div>
-            <div id="nf-section" class="table-section" style="display:none;border-left:3px solid #a855f7;">
-                <div class="table-title">🔄 Near-Far Pozisyonlar <span id="nf-count" class="count">0</span></div>
-                <table><thead><tr><th>Sembol</th><th>Near</th><th>Far</th><th>Spread</th><th>Beklenen Kar</th><th>Anlık P&L</th><th>Gün</th></tr></thead><tbody id="nf-tbody"></tbody></table>
-            </div>
-            <div id="pair-section" class="table-section" style="display:none;border-left:3px solid #06b6d4;">
-                <div class="table-title">📊 Pair Trading Pozisyonlar <span id="pair-count" class="count">0</span> <span id="pair-pnl-badge" class="count" style="margin-left:10px;background:rgba(6,182,212,0.2);color:#06b6d4;">P&L: -</span></div>
-                <table><thead><tr><th>Çift</th><th>Lot A</th><th>Lot B</th><th>Giriş Z</th><th>Anlık Z</th><th>Kademe</th><th>Beklenen</th><th>Anlık P&L</th><th>Gün</th></tr></thead><tbody id="pair-tbody"></tbody></table>
-            </div>
-            <div id="pair-zscore-section" class="table-section" style="display:none;border-left:3px solid #06b6d4;">
-                <div class="table-title">📈 Pair Z-Score İzleme</div>
-                <div id="pair-zscore-grid" class="stats-grid"></div>
-            </div>
         </div>
         
         <!-- Log Sayfası -->
@@ -195,7 +183,6 @@
                     <div class="settings-card-title">💰 Bütçe Ayarları</div>
                     <div class="setting-row"><span class="setting-label">VIOP Bütçe</span><span id="set-viop-budget" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">SPOT Bütçe</span><span id="set-spot-budget" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">NF Bütçe</span><span id="set-nf-budget" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Test Modu</span><span id="set-test-mode" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
@@ -210,24 +197,6 @@
                     <div class="setting-row"><span class="setting-label">Durum</span><span id="set-bb93-enabled" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Başlangıç</span><span id="set-bb93-start" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Bitiş</span><span id="set-bb93-end" class="setting-value">-</span></div>
-                </div>
-                <div class="settings-card">
-                    <div class="settings-card-title">📈 NF Stratejisi</div>
-                    <div class="setting-row"><span class="setting-label">Durum</span><span id="set-nf-enabled" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Max Pozisyon</span><span id="set-nf-max" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Giriş BB ≥</span><span id="set-nf-entry-bb" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Çıkış BB ≤</span><span id="set-nf-exit-bb" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Saat Aralığı</span><span id="set-nf-hours" class="setting-value">-</span></div>
-                </div>
-                <div class="settings-card">
-                    <div class="settings-card-title">📊 Pair Trading</div>
-                    <div class="setting-row"><span class="setting-label">Durum</span><span id="set-pair-enabled" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Bütçe</span><span id="set-pair-budget" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Kullanılan</span><span id="set-pair-used" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Kademe Dağılımı</span><span id="set-pair-alloc" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Giriş Z (1/2/3)</span><span id="set-pair-z-entry" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Çıkış Z ≤</span><span id="set-pair-z-exit" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Çiftler</span><span id="set-pair-defs" class="setting-value" style="font-size:0.8rem;word-break:break-all;">-</span></div>
                 </div>
                 <div class="settings-card">
                     <div class="settings-card-title">⚠️ Risk Yönetimi</div>
@@ -276,6 +245,7 @@
         let GIST_ID = localStorage.getItem('arbGistId') || '';
         let GIST_TOKEN = localStorage.getItem('arbGistToken') || '';
         let lastUpdateTime = null;
+        let statsData = null;  // Stats verisi (nf_max_positions için)
         
         function getGistUrl(file) {
             return `https://gist.githubusercontent.com/${GIST_USER}/${GIST_ID}/raw/${file}?t=${Date.now()}`;
@@ -342,7 +312,7 @@
         
         async function sendPauseCommand() {
             if (!GIST_ID || !GIST_TOKEN) {
-                alert('Komut göndermek için Ayarlar > Bağlantı bölümünden token girmeniz gerekiyor.');
+                alert('Komut göndermek için Ayarlar > Bağlantı bölümünden token giriniz.');
                 return;
             }
             
@@ -480,6 +450,7 @@
                 const r = await fetch(getGistUrl('arb_stats.json'));
                 if (!r.ok) { document.getElementById('set-gist-status').textContent = 'Bağlantı Hatası'; return; }
                 const d = await r.json();
+                statsData = d;  // Global'e kaydet (loadSettings için)
                 lastUpdateTime = d.ts;
                 
                 // Veri bağlantısı kontrolü (IdealData)
@@ -619,90 +590,6 @@
                     }
                 } else ptb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#6b7280">Açık pozisyon yok</td></tr>';
                 
-                // NF Pozisyonları güncelle
-                const nfSection = document.getElementById('nf-section');
-                const nfTb = document.getElementById('nf-tbody');
-                const nfKeys = d.nf_positions ? Object.keys(d.nf_positions) : [];
-                document.getElementById('nf-count').textContent = nfKeys.length;
-                if (nfKeys.length > 0) {
-                    nfSection.style.display = 'block';
-                    nfTb.innerHTML = '';
-                    for (const [sym, pos] of Object.entries(d.nf_positions)) {
-                        const nq = pos.nq || '-';
-                        const fq = pos.fq || '-';
-                        const sp = pos.sp || 0;
-                        const ep = pos.exp || 0;
-                        const pnl = pos.pnl || 0;
-                        const days = pos.d || '-';
-                        nfTb.innerHTML += '<tr><td><strong style="color:#a855f7">'+sym+'</strong></td><td>'+nq+'</td><td>'+fq+'</td><td>'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'" style="color:#a855f7">'+formatMoney(ep)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+days+'</td></tr>';
-                    }
-                } else {
-                    nfSection.style.display = 'none';
-                }
-                
-                // PAIR Pozisyonları güncelle
-                const pairSection = document.getElementById('pair-section');
-                const pairTb = document.getElementById('pair-tbody');
-                const pairZSection = document.getElementById('pair-zscore-section');
-                const pairZGrid = document.getElementById('pair-zscore-grid');
-                const pairKeys = d.pair_positions ? Object.keys(d.pair_positions) : [];
-                const pairZKeys = d.pair_z ? Object.keys(d.pair_z) : [];
-                document.getElementById('pair-count').textContent = pairKeys.length;
-                
-                // Pair pozisyon tablosu
-                if (pairKeys.length > 0) {
-                    pairSection.style.display = 'block';
-                    pairTb.innerHTML = '';
-                    let totalPairPnl = 0;
-                    for (const [pair, pos] of Object.entries(d.pair_positions)) {
-                        const lotA = pos.a || 0;
-                        const lotB = pos.b || 0;
-                        const openZ = pos.oz || 0;
-                        const currentZ = pos.cz || 0;
-                        const tier = pos.t || 0;
-                        const expected = pos.exp || 0;
-                        const pnl = pos.pnl || 0;
-                        const days = pos.d || '-';
-                        totalPairPnl += pnl;
-                        
-                        // Z-Score renklendirme
-                        const zColor = Math.abs(currentZ) > 2 ? '#ef4444' : Math.abs(currentZ) > 1.5 ? '#f59e0b' : '#10b981';
-                        const zArrow = currentZ > openZ ? '↑' : currentZ < openZ ? '↓' : '→';
-                        
-                        pairTb.innerHTML += '<tr><td><strong style="color:#06b6d4">'+pair+'</strong></td><td>'+lotA+'</td><td>'+lotB+'</td><td>'+openZ.toFixed(2)+'</td><td style="color:'+zColor+';font-weight:600;">'+currentZ.toFixed(2)+' '+zArrow+'</td><td>'+tier+'/3</td><td class="'+getPnlClass(expected)+'">'+formatMoney(expected)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+days+'</td></tr>';
-                    }
-                    document.getElementById('pair-pnl-badge').textContent = 'P&L: ' + formatMoney(totalPairPnl);
-                    document.getElementById('pair-pnl-badge').style.color = totalPairPnl >= 0 ? '#10b981' : '#ef4444';
-                } else {
-                    pairSection.style.display = 'none';
-                }
-                
-                // Pair Z-Score izleme kartları (pozisyon olmasa bile pair_enabled ise göster)
-                if (d.pair_enabled && pairZKeys.length > 0) {
-                    pairZSection.style.display = 'block';
-                    pairZGrid.innerHTML = '';
-                    for (const [pair, z] of Object.entries(d.pair_z)) {
-                        const isNull = z === null || z === undefined;
-                        const zVal = isNull ? 0 : parseFloat(z) || 0;
-                        const absZ = Math.abs(zVal);
-                        let zBg = 'rgba(16,185,129,0.1)';  // yeşil - normal
-                        let zColor = '#10b981';
-                        let zLabel = 'Normal';
-                        if (isNull) { zBg = 'rgba(107,114,128,0.2)'; zColor = '#6b7280'; zLabel = 'Veri Yok'; }
-                        else if (absZ >= 3) { zBg = 'rgba(239,68,68,0.2)'; zColor = '#ef4444'; zLabel = 'AŞIRI'; }
-                        else if (absZ >= 2.5) { zBg = 'rgba(249,115,22,0.2)'; zColor = '#f97316'; zLabel = 'Yüksek'; }
-                        else if (absZ >= 2) { zBg = 'rgba(245,158,11,0.2)'; zColor = '#f59e0b'; zLabel = 'Sinyal'; }
-                        
-                        const hasPos = d.pair_positions && d.pair_positions[pair];
-                        const posIndicator = hasPos ? '<span style="color:#06b6d4;font-size:0.7rem;"> ●</span>' : '';
-                        const displayVal = isNull ? '—' : zVal.toFixed(2);
-                        
-                        pairZGrid.innerHTML += '<div class="stat-card" style="background:'+zBg+';border:1px solid '+zColor+'33;"><div class="stat-label">'+pair+posIndicator+'</div><div class="stat-value" style="color:'+zColor+';">'+displayVal+'</div><div class="stat-sub">'+zLabel+'</div></div>';
-                    }
-                } else {
-                    pairZSection.style.display = 'none';
-                }
-                
                 document.getElementById('update-time').textContent = d.ts || new Date().toLocaleTimeString('tr-TR');
                 document.getElementById('total-comm').textContent = (d.total_comm||0).toFixed(2);
                 document.getElementById('risk-free').textContent = ((d.risk_free||0)*100).toFixed(2)+'%';
@@ -749,7 +636,6 @@
                 // Bütçe Ayarları
                 document.getElementById('set-viop-budget').textContent = formatMoney(s.viop_budget);
                 document.getElementById('set-spot-budget').textContent = formatMoney(s.spot_budget);
-                document.getElementById('set-nf-budget').textContent = s.nf_budget ? formatMoney(s.nf_budget) : '-';
                 document.getElementById('set-test-mode').textContent = s.test_mode ? 'AÇIK' : 'KAPALI';
                 document.getElementById('set-test-mode').className = 'setting-value ' + (s.test_mode ? 'warning' : 'highlight');
                 
@@ -767,30 +653,6 @@
                 const bb93End = (s.bb93_end_hour !== undefined ? s.bb93_end_hour : 12) + ':' + String(s.bb93_end_min !== undefined ? s.bb93_end_min : 55).padStart(2,'0');
                 document.getElementById('set-bb93-start').textContent = bb93Start;
                 document.getElementById('set-bb93-end').textContent = bb93End;
-                
-                // NF Stratejisi (undefined ise default true - settings.json'da 1/0 olarak saklanıyor)
-                const nfEnabled = s.nf_enabled !== undefined ? (s.nf_enabled === 1 || s.nf_enabled === true) : true;
-                document.getElementById('set-nf-enabled').textContent = nfEnabled ? 'AKTİF' : 'KAPALI';
-                document.getElementById('set-nf-enabled').className = 'setting-value ' + (nfEnabled ? 'highlight' : 'warning');
-                document.getElementById('set-nf-max').textContent = s.nf_max_positions || '1';
-                document.getElementById('set-nf-entry-bb').textContent = s.nf_entry_bb || '99';
-                document.getElementById('set-nf-exit-bb').textContent = s.nf_exit_bb || '27';
-                const nfStart = (s.nf_start_hour !== undefined ? s.nf_start_hour : 10) + ':' + String(s.nf_start_min !== undefined ? s.nf_start_min : 0).padStart(2,'0');
-                const nfEnd = (s.nf_end_hour !== undefined ? s.nf_end_hour : 12) + ':' + String(s.nf_end_min !== undefined ? s.nf_end_min : 0).padStart(2,'0');
-                document.getElementById('set-nf-hours').textContent = nfStart + ' - ' + nfEnd;
-                
-                // Pair Trading Ayarları
-                const pairEnabled = s.pair_enabled !== undefined ? (s.pair_enabled === 1 || s.pair_enabled === true) : false;
-                document.getElementById('set-pair-enabled').textContent = pairEnabled ? 'AKTİF' : 'KAPALI';
-                document.getElementById('set-pair-enabled').className = 'setting-value ' + (pairEnabled ? 'highlight' : 'warning');
-                document.getElementById('set-pair-budget').textContent = s.pair_budget ? formatMoney(s.pair_budget) : '-';
-                document.getElementById('set-pair-used').textContent = s.pair_used ? formatMoney(s.pair_used) : '-';
-                const pairAlloc = (s.pair_alloc_1 || 30) + ' / ' + (s.pair_alloc_2 || 30) + ' / ' + (s.pair_alloc_3 || 40) + ' %';
-                document.getElementById('set-pair-alloc').textContent = pairAlloc;
-                const pairZEntry = (s.pair_z_entry_1 || 2.0).toFixed(1) + ' / ' + (s.pair_z_entry_2 || 2.5).toFixed(1) + ' / ' + (s.pair_z_entry_3 || 3.0).toFixed(1);
-                document.getElementById('set-pair-z-entry').textContent = pairZEntry;
-                document.getElementById('set-pair-z-exit').textContent = s.pair_z_exit ? s.pair_z_exit.toFixed(1) : '0.5';
-                document.getElementById('set-pair-defs').textContent = s.pair_definitions || '-';
                 
                 // Risk Yönetimi
                 document.getElementById('set-max-loss').textContent = formatMoney(s.max_daily_loss);
