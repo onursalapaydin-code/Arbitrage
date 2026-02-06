@@ -245,7 +245,7 @@
         let GIST_ID = localStorage.getItem('arbGistId') || '';
         let GIST_TOKEN = localStorage.getItem('arbGistToken') || '';
         let lastUpdateTime = null;
-        let statsData = null;  // Stats verisi (nf_max_positions için)
+        let statsData = null;  // Stats verisi
         
         function getGistUrl(file) {
             return `https://gist.githubusercontent.com/${GIST_USER}/${GIST_ID}/raw/${file}?t=${Date.now()}`;
