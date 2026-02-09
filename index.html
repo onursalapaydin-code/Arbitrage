@@ -591,7 +591,7 @@
                         // .NET ticks -> JS Date
                         var entryDate = '-';
                         if (et > 0) { var ms = (et - 621355968000000000) / 10000; var dd = new Date(ms); entryDate = dd.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})+' '+dd.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); }
-                        var spColor = (es > 0 && sp > 0) ? (sp >= es ? '#10b981' : '#ef4444') : '';
+                        var spColor = (es > 0 && sp > 0) ? (sp <= es ? '#10b981' : '#ef4444') : '';
                         ptb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td style="font-size:0.75rem">'+entryDate+'</td><td>'+sq+'</td><td>'+nq+'</td><td>'+formatPercent(es)+'</td><td style="color:'+spColor+'">'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'">'+formatMoney(ep)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+(ac||0)+'/2</td></tr>';
                     }
                 } else ptb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#6b7280">Açık pozisyon yok</td></tr>';
