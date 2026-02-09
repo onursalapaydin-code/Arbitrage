@@ -140,7 +140,7 @@
             <div class="cards">
                 <div class="card"><div class="card-title">Günlük P&L</div><div id="daily-pnl" class="card-value">-</div><div id="daily-trades" class="card-sub">-</div></div>
                 <div class="card"><div class="card-title">Açık Poz P&L</div><div id="total-pnl" class="card-value">-</div><div id="pos-count" class="card-sub">-</div></div>
-                <div class="card"><div class="card-title">VIOP Bakiye</div><div id="viop-bal" class="card-value">-</div><div id="viop-used" class="card-sub">-</div></div>
+                <div class="card"><div class="card-title">VIOP Teminat</div><div id="viop-bal" class="card-value">-</div><div id="viop-used" class="card-sub">-</div></div>
                 <div class="card"><div class="card-title">SPOT Kullanılabilir (T+2)</div><div id="spot-bal" class="card-value">-</div><div id="spot-used" class="card-sub">-</div></div>
             </div>
             <div class="stats-grid">
@@ -563,14 +563,16 @@
                 tp.textContent = formatMoney(d.total_pnl); tp.className = 'card-value '+getPnlClass(d.total_pnl);
                 document.getElementById('pos-count').textContent = (d.count||0)+' pozisyon';
                 
-                document.getElementById('viop-bal').textContent = formatMoney(d.viop_bal);
+                const viopToplam = d.viop_toplam || d.viop_bal;
+                const viopKullanilabilir = d.viop_kullanilabilir || (d.viop_bal - d.viop_used);
+                document.getElementById('viop-bal').textContent = formatMoney(viopToplam);
                 const viopFree = d.viop_free || 0;
                 const viopFreePct = (viopFree * 100).toFixed(1) + '%';
                 let viopFreeColor = '#10b981';  // yeşil
                 if (viopFree < 0.05) viopFreeColor = '#ef4444';  // kırmızı
                 else if (viopFree < 0.10) viopFreeColor = '#f97316';  // turuncu
                 else if (viopFree < 0.20) viopFreeColor = '#f59e0b';  // sarı
-                document.getElementById('viop-used').innerHTML = 'Kullanılan: '+formatMoney(d.viop_used)+' <span style="color:'+viopFreeColor+';font-weight:600;">(Serbest: '+viopFreePct+')</span>';
+                document.getElementById('viop-used').innerHTML = 'Kullanılabilir: '+formatMoney(viopKullanilabilir)+' <span style="color:'+viopFreeColor+';font-weight:600;">(Serbest: '+viopFreePct+')</span>';
                 document.getElementById('spot-bal').textContent = formatMoney(d.t2 !== undefined ? d.t2 : d.spot_bal);
                 document.getElementById('spot-used').textContent = 'Kullanılan: '+formatMoney(d.spot_used)+' / Toplam: '+formatMoney(d.spot_bal);
                 
