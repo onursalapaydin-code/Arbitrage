@@ -585,14 +585,15 @@
                 document.getElementById('positions-count').textContent = posKeys.length;
                 if (posKeys.length > 0) {
                     for (const [sym,pos] of Object.entries(d.positions)) {
-                        let sq,nq,sp,ep,pnl,ac,et,es;
-                        if (Array.isArray(pos)) { [sq,nq,,,sp,ep,ac]=pos; et=0; es=0; }
-                        else {sq=pos.sq||'-';nq=pos.nq||'-';sp=pos.sp||0;ep=pos.exp||0;pnl=pos.pnl||0;ac=pos.d||0;et=pos.et||0;es=pos.es||0;}
+                        let sq,nq,sp,ep,pnl,ac,et,es,bb93;
+                        if (Array.isArray(pos)) { [sq,nq,,,sp,ep,ac]=pos; et=0; es=0; bb93=false; }
+                        else {sq=pos.sq||'-';nq=pos.nq||'-';sp=pos.sp||0;ep=pos.exp||0;pnl=pos.pnl||0;ac=pos.d||0;et=pos.et||0;es=pos.es||0;bb93=pos.bb93||false;}
                         // .NET ticks -> JS Date
                         var entryDate = '-';
                         if (et > 0) { var ms = (et - 621355968000000000) / 10000; var dd = new Date(ms); entryDate = dd.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})+' '+dd.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); }
                         var spColor = (es > 0 && sp > 0) ? (sp <= es ? '#10b981' : '#ef4444') : '';
-                        ptb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td style="font-size:0.75rem">'+entryDate+'</td><td>'+sq+'</td><td>'+nq+'</td><td>'+formatPercent(es)+'</td><td style="color:'+spColor+'">'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'">'+formatMoney(ep)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+(ac||0)+'/2</td></tr>';
+                        var srcTag = bb93 ? ' <span style="background:#f59e0b;color:#000;padding:0 4px;border-radius:3px;font-size:0.65rem;font-weight:700">BB93</span>' : '';
+                        ptb.innerHTML += '<tr><td><strong>'+sym+'</strong>'+srcTag+'</td><td style="font-size:0.75rem">'+entryDate+'</td><td>'+sq+'</td><td>'+nq+'</td><td>'+formatPercent(es)+'</td><td style="color:'+spColor+'">'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'">'+formatMoney(ep)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+(ac||0)+'/2</td></tr>';
                     }
                 } else ptb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#6b7280">Açık pozisyon yok</td></tr>';
                 
