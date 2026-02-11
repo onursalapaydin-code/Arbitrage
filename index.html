@@ -193,12 +193,6 @@
                     <div class="setting-row"><span class="setting-label">GIE Kademe</span><span id="set-gie-depth" class="setting-value">-</span></div>
                 </div>
                 <div class="settings-card">
-                    <div class="settings-card-title">🎯 BB93 Stratejisi</div>
-                    <div class="setting-row"><span class="setting-label">Durum</span><span id="set-bb93-enabled" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Başlangıç</span><span id="set-bb93-start" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Bitiş</span><span id="set-bb93-end" class="setting-value">-</span></div>
-                </div>
-                <div class="settings-card">
                     <div class="settings-card-title">⚠️ Risk Yönetimi</div>
                     <div class="setting-row"><span class="setting-label">Max Günlük Zarar</span><span id="set-max-loss" class="setting-value">-</span></div>
                     <div class="setting-row"><span class="setting-label">Margin Sarı</span><span id="set-margin-warn" class="setting-value" style="color:#f59e0b">-</span></div>
@@ -585,15 +579,14 @@
                 document.getElementById('positions-count').textContent = posKeys.length;
                 if (posKeys.length > 0) {
                     for (const [sym,pos] of Object.entries(d.positions)) {
-                        let sq,nq,sp,ep,pnl,ac,et,es,bb93;
-                        if (Array.isArray(pos)) { [sq,nq,,,sp,ep,ac]=pos; et=0; es=0; bb93=false; }
-                        else {sq=pos.sq||'-';nq=pos.nq||'-';sp=pos.sp||0;ep=pos.exp||0;pnl=pos.pnl||0;ac=pos.d||0;et=pos.et||0;es=pos.es||0;bb93=pos.bb93||false;}
+                        let sq,nq,sp,ep,pnl,ac,et,es;
+                        if (Array.isArray(pos)) { [sq,nq,,,sp,ep,ac]=pos; et=0; es=0; }
+                        else {sq=pos.sq||'-';nq=pos.nq||'-';sp=pos.sp||0;ep=pos.exp||0;pnl=pos.pnl||0;ac=pos.d||0;et=pos.et||0;es=pos.es||0;}
                         // .NET ticks -> JS Date
                         var entryDate = '-';
                         if (et > 0) { var ms = (et - 621355968000000000) / 10000; var dd = new Date(ms); entryDate = dd.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})+' '+dd.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); }
                         var spColor = (es > 0 && sp > 0) ? (sp <= es ? '#10b981' : '#ef4444') : '';
-                        var srcTag = bb93 ? ' <span style="background:#f59e0b;color:#000;padding:0 4px;border-radius:3px;font-size:0.65rem;font-weight:700">BB93</span>' : '';
-                        ptb.innerHTML += '<tr><td><strong>'+sym+'</strong>'+srcTag+'</td><td style="font-size:0.75rem">'+entryDate+'</td><td>'+sq+'</td><td>'+nq+'</td><td>'+formatPercent(es)+'</td><td style="color:'+spColor+'">'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'">'+formatMoney(ep)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+(ac||0)+'/2</td></tr>';
+                        ptb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td style="font-size:0.75rem">'+entryDate+'</td><td>'+sq+'</td><td>'+nq+'</td><td>'+formatPercent(es)+'</td><td style="color:'+spColor+'">'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'">'+formatMoney(ep)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+(ac||0)+'/2</td></tr>';
                     }
                 } else ptb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#6b7280">Açık pozisyon yok</td></tr>';
                 
@@ -651,15 +644,6 @@
                 document.getElementById('set-roll-min').textContent = s.roll_min_margin ? (s.roll_min_margin * 100).toFixed(2) + '%' : '-';
                 document.getElementById('set-replacement').textContent = s.replacement_threshold ? (s.replacement_threshold * 100).toFixed(0) + '%' : '-';
                 document.getElementById('set-gie-depth').textContent = s.gie_depth_levels || '-';
-                
-                // BB93 ayarları (undefined ise default true - settings.json'da 1/0 olarak saklanıyor)
-                const bb93Enabled = s.bb93_enabled !== undefined ? (s.bb93_enabled === 1 || s.bb93_enabled === true) : true;
-                document.getElementById('set-bb93-enabled').textContent = bb93Enabled ? 'AKTİF' : 'KAPALI';
-                document.getElementById('set-bb93-enabled').className = 'setting-value ' + (bb93Enabled ? 'highlight' : 'warning');
-                const bb93Start = (s.bb93_start_hour !== undefined ? s.bb93_start_hour : 10) + ':' + String(s.bb93_start_min !== undefined ? s.bb93_start_min : 0).padStart(2,'0');
-                const bb93End = (s.bb93_end_hour !== undefined ? s.bb93_end_hour : 12) + ':' + String(s.bb93_end_min !== undefined ? s.bb93_end_min : 55).padStart(2,'0');
-                document.getElementById('set-bb93-start').textContent = bb93Start;
-                document.getElementById('set-bb93-end').textContent = bb93End;
                 
                 // Risk Yönetimi
                 document.getElementById('set-max-loss').textContent = formatMoney(s.max_daily_loss);
