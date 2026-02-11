@@ -17,7 +17,6 @@
         .badge-market.closed { background: #ef4444; color: #fff; }
         .badge-broker { background: #3b82f6; }
         .badge-broker.disconnected { background: #f59e0b; }
-        .badge-test { background: #8b5cf6; }
         .badge-pending { background: #f59e0b; color: #000; animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .nav-links { display: flex; gap: 10px; }
@@ -103,7 +102,6 @@
                     <span id="badge-margin" class="badge" style="display:none;font-weight:600;">Margin</span>
                     <span id="badge-market" class="badge badge-market">-</span>
                     <span id="badge-broker" class="badge badge-broker">-</span>
-                    <span id="badge-test" class="badge badge-test" style="display:none">TEST</span>
                     <span id="badge-pending" class="badge badge-pending" style="display:none">⏳</span>
                     <span id="badge-paused" class="badge" style="display:none;background:#f59e0b;color:#000;font-weight:600;">⏸️ DURAKLATILDI</span>
                     <button id="pause-btn" class="badge" style="background:#f59e0b;color:#000;border:none;cursor:pointer;font-weight:600;" onclick="sendPauseCommand()">⏸ DURAKLAT</button>
@@ -179,12 +177,6 @@
         <!-- Ayarlar Sayfası -->
         <div id="page-settings" class="page">
             <div class="settings-grid">
-                <div class="settings-card">
-                    <div class="settings-card-title">💰 Bütçe Ayarları</div>
-                    <div class="setting-row"><span class="setting-label">VIOP Bütçe</span><span id="set-viop-budget" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">SPOT Bütçe</span><span id="set-spot-budget" class="setting-value">-</span></div>
-                    <div class="setting-row"><span class="setting-label">Test Modu</span><span id="set-test-mode" class="setting-value">-</span></div>
-                </div>
                 <div class="settings-card">
                     <div class="settings-card-title">📊 SN Strateji</div>
                     <div class="setting-row"><span class="setting-label">SN Min Marj</span><span id="set-sn-min" class="setting-value">-</span></div>
@@ -456,7 +448,6 @@
                 document.getElementById('badge-market').className = 'badge badge-market'+(d.market?'':' closed');
                 document.getElementById('badge-broker').textContent = d.broker?'Broker ✓':'Broker ✗';
                 document.getElementById('badge-broker').className = 'badge badge-broker'+(d.broker?'':' disconnected');
-                document.getElementById('badge-test').style.display = d.test?'inline':'none';
                 
                 // Margin durumu: 0=normal, 1=warning(sarı), 2=danger(turuncu), 3=critical(kırmızı)
                 const marginBadge = document.getElementById('badge-margin');
@@ -633,11 +624,6 @@
                 }
                 console.log('Settings parsed:', s);
                 
-                // Bütçe Ayarları
-                document.getElementById('set-viop-budget').textContent = formatMoney(s.viop_budget);
-                document.getElementById('set-spot-budget').textContent = formatMoney(s.spot_budget);
-                document.getElementById('set-test-mode').textContent = s.test_mode ? 'AÇIK' : 'KAPALI';
-                document.getElementById('set-test-mode').className = 'setting-value ' + (s.test_mode ? 'warning' : 'highlight');
                 
                 // SN Strateji
                 document.getElementById('set-sn-min').textContent = s.sn_min_margin ? (s.sn_min_margin * 100).toFixed(2) + '%' : '-';
