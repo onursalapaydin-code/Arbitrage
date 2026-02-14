@@ -417,17 +417,26 @@
         }
         function formatPercent(val) { return val ? (parseFloat(val)*100).toFixed(3)+'%' : '-'; }
         function getPnlClass(val) { const n=parseFloat(val); return n>0?'positive':n<0?'negative':'neutral'; }
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
         
         function formatLogLine(line) {
             if (!line.trim()) return '';
             const m = line.match(/^(\d{2}:\d{2}:\d{2}\.\d{3})\s(.*)$/);
-            if (!m) return '<div class="log-line">'+line+'</div>';
+            if (!m) return '<div class="log-line">'+escapeHtml(line)+'</div>';
             let cls = '';
             if (m[2].includes('❌')||m[2].includes('HATA')) cls='log-error';
             else if (m[2].includes('✅')||m[2].includes('✓')) cls='log-success';
             else if (m[2].includes('⚠️')) cls='log-warning';
             else if (m[2].includes('🔄')||m[2].includes('📊')||m[2].includes('🎯')) cls='log-info';
-            return '<div class="log-line"><span class="log-time">'+m[1]+'</span> <span class="'+cls+'">'+m[2]+'</span></div>';
+            return '<div class="log-line"><span class="log-time">'+escapeHtml(m[1])+'</span> <span class="'+cls+'">'+escapeHtml(m[2])+'</span></div>';
         }
         
         async function fetchData() {
@@ -485,8 +494,14 @@
                         'INDEX_CIRCUIT': '⚡ Endeks devre kesici aktif - Yeni pozisyon açılmıyor.',
                         'MARGIN_CRITICAL': '🔴 Margin kritik seviyede - Pozisyon kapatılıyor.'
                     };
-                    const messages = alerts.map(a => alertMessages[a] || a).join('<br>');
-                    criticalText.innerHTML = messages;
+                    const messages = alerts.map(a => alertMessages[a] || String(a));
+                    criticalText.replaceChildren();
+                    messages.forEach((msg, i) => {
+                        const span = document.createElement('span');
+                        span.textContent = msg;
+                        criticalText.appendChild(span);
+                        if (i < messages.length - 1) criticalText.appendChild(document.createElement('br'));
+                    });
                     criticalBox.classList.remove('hidden');
                 } else {
                     criticalBox.classList.add('hidden');
@@ -518,7 +533,7 @@
                         const parts = k.split('_');
                         const sym = parts.slice(0, -1).join('_');  // Side hariç tümünü birleştir
                         const pct = p.qty>0?((p.processed/p.qty)*100).toFixed(0):0;
-                        tb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td>'+p.side+'</td><td>'+p.qty+'</td><td>'+(p.price||0).toFixed(2)+' ₺</td><td>'+p.processed+'/'+p.qty+' ('+pct+'%)</td><td>'+(p.wait||0)+' dk</td></tr>';
+                        tb.innerHTML += '<tr><td><strong>'+escapeHtml(sym)+'</strong></td><td>'+escapeHtml(p.side)+'</td><td>'+escapeHtml(p.qty)+'</td><td>'+(p.price||0).toFixed(2)+' ₺</td><td>'+escapeHtml(p.processed)+'/'+escapeHtml(p.qty)+' ('+escapeHtml(pct)+'%)</td><td>'+escapeHtml(p.wait||0)+' dk</td></tr>';
                     }
                 }
                 
@@ -536,7 +551,7 @@
                         const filledPrice = o.fp || 0;
                         const targetLeg = o.tl || '-';
                         const sideClass = filledSide === 'SELL' ? 'pnl-neg' : 'pnl-pos';
-                        otb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td>'+filledLeg+'</td><td class="'+sideClass+'">'+filledSide+'</td><td>'+filledQty+'</td><td>'+filledPrice.toFixed(2)+' ₺</td><td>'+targetLeg+'</td></tr>';
+                        otb.innerHTML += '<tr><td><strong>'+escapeHtml(sym)+'</strong></td><td>'+escapeHtml(filledLeg)+'</td><td class="'+sideClass+'">'+escapeHtml(filledSide)+'</td><td>'+escapeHtml(filledQty)+'</td><td>'+filledPrice.toFixed(2)+' ₺</td><td>'+escapeHtml(targetLeg)+'</td></tr>';
                     }
                 }
                 
@@ -571,13 +586,13 @@
                 if (posKeys.length > 0) {
                     for (const [sym,pos] of Object.entries(d.positions)) {
                         let sq,nq,sp,ep,pnl,ac,et,es;
-                        if (Array.isArray(pos)) { [sq,nq,,,sp,ep,ac]=pos; et=0; es=0; }
+                        if (Array.isArray(pos)) { [sq,nq,,,sp,ep,ac,pnl]=pos; et=0; es=0; if (pnl === undefined || pnl === null) pnl = ep; }
                         else {sq=pos.sq||'-';nq=pos.nq||'-';sp=pos.sp||0;ep=pos.exp||0;pnl=pos.pnl||0;ac=pos.d||0;et=pos.et||0;es=pos.es||0;}
                         // .NET ticks -> JS Date
                         var entryDate = '-';
                         if (et > 0) { var ms = (et - 621355968000000000) / 10000; var dd = new Date(ms); entryDate = dd.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})+' '+dd.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); }
                         var spColor = (es > 0 && sp > 0) ? (sp <= es ? '#10b981' : '#ef4444') : '';
-                        ptb.innerHTML += '<tr><td><strong>'+sym+'</strong></td><td style="font-size:0.75rem">'+entryDate+'</td><td>'+sq+'</td><td>'+nq+'</td><td>'+formatPercent(es)+'</td><td style="color:'+spColor+'">'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'">'+formatMoney(ep)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+(ac||0)+'/2</td></tr>';
+                        ptb.innerHTML += '<tr><td><strong>'+escapeHtml(sym)+'</strong></td><td style="font-size:0.75rem">'+escapeHtml(entryDate)+'</td><td>'+escapeHtml(sq)+'</td><td>'+escapeHtml(nq)+'</td><td>'+formatPercent(es)+'</td><td style="color:'+spColor+'">'+formatPercent(sp)+'</td><td class="'+getPnlClass(ep)+'">'+formatMoney(ep)+'</td><td class="'+getPnlClass(pnl)+'">'+formatMoney(pnl)+'</td><td>'+escapeHtml(ac||0)+'/2</td></tr>';
                     }
                 } else ptb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#6b7280">Açık pozisyon yok</td></tr>';
                 
@@ -602,7 +617,7 @@
                 const t = await r.text();
                 const lines = t.split('\n').filter(l=>l.trim()).reverse();  // Yeniden eskiye sırala
                 document.getElementById('log-content').innerHTML = lines.map(formatLogLine).join('');
-            } catch(e) { document.getElementById('log-content').innerHTML='<div class="log-error">Hata: '+e.message+'</div>'; }
+            } catch(e) { document.getElementById('log-content').innerHTML='<div class="log-error">Hata: '+escapeHtml(e.message)+'</div>'; }
         }
         
         async function loadSettings() {
